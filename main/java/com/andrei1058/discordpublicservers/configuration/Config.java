@@ -24,6 +24,8 @@
 
 package com.andrei1058.discordpublicservers.configuration;
 
+import net.dv8tion.jda.core.OnlineStatus;
+
 import java.io.*;
 import java.util.Properties;
 
@@ -33,94 +35,110 @@ public class Config {
     OutputStream out;
     InputStream in;
 
-    private String token, host, port, user, pass, statusType, statusMsg, streamLink;
+    private String token, host, port, user, pass, statusType, statusMsg, streamLink, ownerID;
+    private String logo = "https://discordpublicservers.com/inc/logo.png";
+    private OnlineStatus status;
 
     public Config() {
         properties = new Properties();
 
         /* create file */
         File botProp = new File("bot.properties");
-        if (!botProp.exists()){
+        if (!botProp.exists()) {
             try {
                 botProp.createNewFile();
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
+            /* add defaults */
+        token = setupProp("token", "sadasd3d23");
+        host = setupProp("mysql-host", "localhost");
+        port = setupProp("mysql-port", "3306");
+        user = setupProp("mysql-user", "root");
+        pass = setupProp("mysql-pass", "pass");
+        statusMsg = setupProp("status-msg", "on {servers} servers");
+        statusType = setupProp("status-type", "PLAYING");
+        streamLink = setupProp("stream-link", "nulll");
+        ownerID = setupProp("owner-ID", "178199397782257665");
+        openIn();
+        if (properties.get("status") != null) {
+            switch (properties.getProperty("status").toLowerCase()) {
+                default:
+                    status = OnlineStatus.ONLINE;
+                    break;
+                case "do_not_disturb":
+                case "donotdisturb":
+                case "busy":
+                    status = OnlineStatus.DO_NOT_DISTURB;
+                    break;
+                case "idle":
+                    status = OnlineStatus.IDLE;
+                    break;
+                case "offline":
+                    status = OnlineStatus.OFFLINE;
+                    break;
+            }
+        } else {
+            closeIn();
+            openOut();
+            properties.setProperty("status", "ONLINE");
+            status = OnlineStatus.ONLINE;
+            closeOut();
+        }
+        closeIn();
+    }
+
+    private String setupProp(String path, String value) {
+        openIn();
+        if (properties.get(path) == null) {
+            closeIn();
+            openOut();
+            properties.setProperty(path, value);
+            closeOut();
+        }
+        return (String) properties.get(path);
+    }
+
+    private void closeIn() {
+        if (in != null) {
+            try {
+                in.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private void openIn() {
+        try {
+            in = new FileInputStream("bot.properties");
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        try {
+            properties.load(in);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void openOut() {
         try {
             out = new FileOutputStream("bot.properties");
-            in = new FileInputStream("bot.properties");
-            properties.load(in);
-
-            /* add defaults */
-            if (properties.get("token") == null) {
-                properties.setProperty("token", "md9032jnf389n3f34nf4389nf893nf3");
-            } else {
-                token = properties.getProperty("token");
-            }
-
-            if (properties.get("mysql-host") == null){
-                properties.setProperty("mysql-host", "localhost");
-            } else {
-                host = properties.getProperty("mysql-host");
-            }
-
-            if (properties.get("mysql-port") == null){
-                properties.setProperty("mysql-port", "3306");
-            } else {
-                port = properties.getProperty("mysql-port");
-            }
-
-            if (properties.get("mysql-user") == null){
-                properties.setProperty("mysql-user", "root");
-            } else {
-                user = properties.getProperty("mysql-user");
-            }
-
-            if (properties.get("mysql-pass") == null){
-                properties.setProperty("mysql-pass", "pass");
-            } else {
-                pass = properties.getProperty("mysql-pass");
-            }
-
-            if (properties.get("status-type") == null){
-                properties.setProperty("status-type", "PLAYING"); //todo playing, streaming
-            } else {
-                statusType = properties.getProperty("status-type");
-            }
-
-            if (properties.get("status-msg") == null){
-                properties.setProperty("status-msg", "on {servers} servers"); //todo PLACEHOLDERS: {servers} - svs nr
-            } else {
-                statusMsg = properties.getProperty("status-msg");
-            }
-
-            if (properties.get("stream-link") == null){
-                properties.setProperty("stream-link", "null"); //todo if status-type == streaming
-            } else {
-                streamLink = properties.getProperty("stream-link");
-            }
-
-            properties.store(out, null);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
-        } finally {
-            if (out != null){
-                try {
-                    out.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-            if (in != null){
-                try {
-                    in.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
+        }
+    }
+
+    private void closeOut() {
+        try {
+            properties.store(out, null);
+            out.close();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
@@ -155,5 +173,17 @@ public class Config {
 
     public String getStreamLink() {
         return streamLink;
+    }
+
+    public OnlineStatus getStatus() {
+        return status;
+    }
+
+    public String getOwnerID() {
+        return ownerID;
+    }
+
+    public String getLogo() {
+        return logo;
     }
 }

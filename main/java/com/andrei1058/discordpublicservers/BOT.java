@@ -24,7 +24,10 @@
 
 package com.andrei1058.discordpublicservers;
 
+import com.andrei1058.discordpublicservers.commands.Help;
 import com.andrei1058.discordpublicservers.configuration.Config;
+import com.andrei1058.discordpublicservers.listeners.Message;
+import com.andrei1058.discordpublicservers.listeners.Ready;
 import net.dv8tion.jda.core.AccountType;
 import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.JDABuilder;
@@ -35,6 +38,8 @@ public class BOT {
 
     private static Config config;
     private static JDA bot;
+    private static String version = "1.0beta";
+    private static String latUpdate = "18/02/2018 UTC+2";
 
 
      public static void main(String[] args){
@@ -45,6 +50,10 @@ public class BOT {
              e.printStackTrace();
              return;
          }
+         getBot().addEventListener(new Ready());
+         getBot().addEventListener(new Message());
+         getBot().setAutoReconnect(true);
+         new Help("help");
      }
 
     public static Config getConfig() {
@@ -53,5 +62,13 @@ public class BOT {
 
     public static JDA getBot() {
         return bot;
+    }
+
+    public static String getLatUpdate() {
+        return latUpdate;
+    }
+
+    public static String getVersion() {
+        return version;
     }
 }

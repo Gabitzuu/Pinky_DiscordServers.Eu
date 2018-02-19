@@ -24,6 +24,7 @@
 
 package com.andrei1058.discordpublicservers.listeners;
 
+import com.andrei1058.discordpublicservers.Misc;
 import net.dv8tion.jda.core.entities.Game;
 import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.events.ReadyEvent;
@@ -54,5 +55,6 @@ public class Ready extends ListenerAdapter {
                 break;
         }
         getBot().getPresence().setStatus(getConfig().getStatus());
+        Misc.startUpRefresh();
     }
 }

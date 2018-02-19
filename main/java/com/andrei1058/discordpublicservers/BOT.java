@@ -26,8 +26,11 @@ package com.andrei1058.discordpublicservers;
 
 import com.andrei1058.discordpublicservers.commands.Help;
 import com.andrei1058.discordpublicservers.configuration.Config;
+import com.andrei1058.discordpublicservers.configuration.Database;
+import com.andrei1058.discordpublicservers.listeners.CollectData;
 import com.andrei1058.discordpublicservers.listeners.Message;
 import com.andrei1058.discordpublicservers.listeners.Ready;
+import com.andrei1058.discordpublicservers.listeners.Shutdown;
 import net.dv8tion.jda.core.AccountType;
 import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.JDABuilder;
@@ -40,6 +43,7 @@ public class BOT {
     private static JDA bot;
     private static String version = "1.0beta";
     private static String latUpdate = "18/02/2018 UTC+2";
+    private static Database database;
 
 
      public static void main(String[] args){
@@ -52,8 +56,14 @@ public class BOT {
          }
          getBot().addEventListener(new Ready());
          getBot().addEventListener(new Message());
+         getBot().addEventListener(new Shutdown());
+         getBot().addEventListener(new CollectData());
          getBot().setAutoReconnect(true);
          new Help("help");
+         database = new Database();
+
+         //todo check for new servers to save
+         //todo check for servers to remove
      }
 
     public static Config getConfig() {
@@ -70,5 +80,13 @@ public class BOT {
 
     public static String getVersion() {
         return version;
+    }
+
+    public static Database getDatabase() {
+        return database;
+    }
+
+    public static void log(String message){
+         System.out.println(message);
     }
 }

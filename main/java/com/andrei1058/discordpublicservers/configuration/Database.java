@@ -53,9 +53,11 @@ public class Database {
         try {
             connection.createStatement().executeUpdate("CREATE TABLE IF NOT EXISTS servers (id int not null auto_increment primary key, server_id bigint(200), added_date timestamp, " +
                     "server_name varchar(200), server_desc varchar(200), on_users int(200), tot_users int(200), bots int(200), last_bump timestamp, last_update timestamp, votes int(200), " +
-                    "premium int(1), owner_id bigint(200), owner_name varchar(200), invite_link varchar(200), server_icon varchar(200), tags varchar(200), langs varchar(200), display int(1);");
+                    "premium int(1), owner_id bigint(200), owner_name varchar(200), invite_link varchar(200), server_icon varchar(200), tags varchar(200), langs varchar(200), display int(1));");
+            connection.createStatement().executeUpdate("CREATE TABLE IF NOT EXISTS banned_servers (id int not null auto_increment primary key, server_id bigint(200), date timestamp, reason varchar(200));");
+            connection.createStatement().executeUpdate("CREATE TABLE IF NOT EXISTS banned_users (id int not null auto_increment primary key, user_id bigint(200), date timestamp, reason varchar(200));");
         } catch (SQLException e) {
-            e.printStackTrace();
+           log(e.getMessage());
         }
     }
 
@@ -70,10 +72,98 @@ public class Database {
         }
     }
 
+    public boolean isGuildBanned(String id){
+        if (!isConnected()) connect();
+        try {
+            ResultSet rs = connection.createStatement().executeQuery("SELECT reason FROM banned_servers WHERE server_id='"+id+"';");
+            return rs.next();
+        } catch (SQLException e) {
+            log(e.getMessage());
+            return false;
+        }
+    }
+
+    public String getGuildBanReason(String id){
+        if (!isConnected()) connect();
+        try {
+            ResultSet rs = connection.createStatement().executeQuery("SELECT reason FROM banned_servers WHERE server_id='"+id+"';");
+            return rs.getString(1);
+        } catch (SQLException e) {
+            log(e.getMessage());
+            return "";
+        }
+    }
+
+    public String getUserBanReason(String id){
+        if (!isConnected()) connect();
+        try {
+            ResultSet rs = connection.createStatement().executeQuery("SELECT reason FROM banned_users WHERE server_id='"+id+"';");
+            return rs.getString(1);
+        } catch (SQLException e) {
+            log(e.getMessage());
+            return "";
+        }
+    }
+
+    public boolean isUserBanned(String id){
+        if (!isConnected()) connect();
+        try {
+            ResultSet rs = connection.createStatement().executeQuery("SELECT reason FROM banned_users WHERE user_id='"+id+"';");
+            return rs.next();
+        } catch (SQLException e) {
+            log(e.getMessage());
+            return false;
+        }
+    }
+
+    public void banUser(long id, String reason){
+        if (!isConnected()) connect();
+        try {
+            PreparedStatement ps = connection.prepareStatement("INSERT INTO banned_users VALUES(?,?,?);");
+            ps.setInt(1, 0);
+            ps.setLong(2, id);
+            ps.setString(3, reason);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            log(e.getMessage());
+        }
+    }
+
+    public void banGuild(long id, String reason){
+        if (!isConnected()) connect();
+        try {
+            PreparedStatement ps = connection.prepareStatement("INSERT INTO banned_servers VALUES(?,?,?);");
+            ps.setInt(1, 0);
+            ps.setLong(2, id);
+            ps.setString(3, reason);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            log(e.getMessage());
+        }
+    }
+
+    public void unbanUser(long id){
+        if (!isConnected()) connect();
+        try {
+            connection.createStatement().executeUpdate("DELETE FROM banned_users WHERE id='"+id+"';");
+        } catch (SQLException e) {
+            log(e.getMessage());
+        }
+    }
+
+    public void unbanGuild(long id){
+        if (!isConnected()) connect();
+        try {
+            connection.createStatement().executeUpdate("DELETE FROM banned_servers WHERE id='"+id+"';");
+        } catch (SQLException e) {
+            log(e.getMessage());
+        }
+    }
+
     public void addNewServer(long server_id, String server_name, int on_users, int tot_users, int bots, long owner_id, String owner_name, String invite_link, String server_icon, String tags, String langs){
         if (!isConnected()) connect();
         try {
-            PreparedStatement ps = connection.prepareStatement("INSERT INTO servers VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);");
+            PreparedStatement ps = connection.prepareStatement("INSERT INTO servers VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);");
             ps.setInt(1, 0);
             ps.setLong(2, server_id);
             ps.setDate(3, new Date(System.currentTimeMillis()));

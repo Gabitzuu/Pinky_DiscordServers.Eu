@@ -42,7 +42,7 @@ public class BOT {
     private static Config config;
     private static JDA bot;
     private static String version = "1.0beta";
-    private static String latUpdate = "18/02/2018 UTC+2";
+    private static String latUpdate = "19/02/2018 UTC+2";
     private static Database database;
 
 

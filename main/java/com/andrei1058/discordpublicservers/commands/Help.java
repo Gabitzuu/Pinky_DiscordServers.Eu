@@ -49,7 +49,7 @@ public class Help extends Command {
             /** service owner commands*/
             if (sender.getUser().getId().equalsIgnoreCase(getConfig().getOwnerID())) {
                 EmbedBuilder eb = new EmbedBuilder();
-                eb.setTitle("DiscordPublicServers.Com", getConfig().getLogo());
+                eb.setTitle("DiscordServers.Eu", getConfig().getLogo());
                 eb.setThumbnail(getConfig().getLogo());
                 eb.setAuthor(getBot().getSelfUser().getName(), "https://discordpublicservers.com", getBot().getSelfUser().getAvatarUrl());
                 eb.addField("00stop", "Shutdown dps.", true);
@@ -71,7 +71,7 @@ public class Help extends Command {
             /** server staff commands*/
             if (sender.hasPermission(Permission.MANAGE_ROLES)){
                 EmbedBuilder eb = new EmbedBuilder();
-                eb.setTitle("DiscordPublicServers.Com", getConfig().getLogo());
+                eb.setTitle("DiscordServers.Eu", getConfig().getLogo());
                 eb.setThumbnail(getConfig().getLogo());
                 eb.setAuthor(getBot().getSelfUser().getName(), "https://discordpublicservers.com", getBot().getSelfUser().getAvatarUrl());
                 eb.addField("00bump", "Bump this sv.", true);
@@ -86,7 +86,7 @@ public class Help extends Command {
         } else {
             /** service owner commands*/
             if (sender.getUser().getId().equalsIgnoreCase(getConfig().getOwnerID())) {
-                c.sendMessage("**DiscordPublicServers.Com**\n  Service staff commands. \n\n" +
+                c.sendMessage("**DiscordServers.Eu**\nService staff commands. \n\n" +
                         "``00stop`` - Shutdown dps. \n" +
                         "``00restart`` - Restart dps. \n" +
                         "``00banUser`` - Ban a user. \n" +
@@ -102,7 +102,7 @@ public class Help extends Command {
             }
             /** server staff commands */
             if (sender.hasPermission(Permission.MANAGE_ROLES)){
-                c.sendMessage("**DiscordPublicServers.Com**\n   Server staff commands. \n\n" +
+                c.sendMessage("**DiscordServers.Eu**\nServer staff commands. \n\n" +
                         "``00bump`` -Bump this sv. \n" +
                         "``00setLang`` - Set sv languages. \n" +
                         "``00setTags`` -Set sv categories. \n" +

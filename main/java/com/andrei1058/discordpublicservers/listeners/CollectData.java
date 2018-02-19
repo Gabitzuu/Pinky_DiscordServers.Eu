@@ -26,6 +26,7 @@ package com.andrei1058.discordpublicservers.listeners;
 
 import com.andrei1058.discordpublicservers.Misc;
 import com.andrei1058.discordpublicservers.customisation.Langs;
+import com.andrei1058.discordpublicservers.customisation.Messages;
 import com.andrei1058.discordpublicservers.customisation.Tags;
 import net.dv8tion.jda.core.OnlineStatus;
 import net.dv8tion.jda.core.events.guild.GuildJoinEvent;
@@ -45,19 +46,40 @@ public class CollectData extends ListenerAdapter {
     /** bot join */
     @Override
     public void onGuildJoin(GuildJoinEvent e){
+        if (getDatabase().isGuildBanned(e.getGuild().getId())){
+            Messages.send(e.getGuild(), e.getGuild().getOwner().getUser(), Messages.Message.CANT_SCAN_GUILD_BANED);
+            e.getGuild().leave();
+            return;
+        } else if (getDatabase().isUserBanned(e.getGuild().getOwner().getUser().getId())){
+            Messages.send(e.getGuild(), e.getGuild().getOwner().getUser(), Messages.Message.CANT_SCAN_USER_BANNED);
+            e.getGuild().leave();
+            return;
+        }
         if (getDatabase().isGuildExists(e.getGuild().getId())){
             if (!getDatabase().isShown(e.getGuild().getId())){
                 getDatabase().showGuild(e.getGuild().getId());
+                Messages.send(e.getGuild(), e.getGuild().getOwner().getUser(), Messages.Message.GUILD_RE_ADDED);
+            }
+            String invite = Misc.createInviteLink(e.getGuild());
+            if (invite.isEmpty()){
+                e.getGuild().leave().complete();
+                return;
             }
             getDatabase().updateGuildData(e.getGuild().getIdLong(), e.getGuild().getName(), e.getGuild().getMembers().stream()
                     .filter(m -> !(m.getOnlineStatus() == OnlineStatus.OFFLINE || m.getOnlineStatus() == OnlineStatus.INVISIBLE)).toArray().length, e.getGuild().getMembers().size(),
                     e.getGuild().getMembers().stream().filter(m -> m.getUser().isBot()).toArray().length, e.getGuild().getOwner().getUser().getIdLong(), e.getGuild().getOwner().getEffectiveName(),
-                    Misc.createInviteLink(e.getGuild()), e.getGuild().getIconUrl());
+                    invite, e.getGuild().getIconUrl());
         } else {
+            String invite = Misc.createInviteLink(e.getGuild());
+            if (invite.isEmpty()){
+                e.getGuild().leave().complete();
+                return;
+            }
             getDatabase().addNewServer(e.getGuild().getIdLong(), e.getGuild().getName(), e.getGuild().getMembers().stream().filter(m ->
             !(m.getOnlineStatus() == OnlineStatus.OFFLINE || m.getOnlineStatus() == OnlineStatus.INVISIBLE)).toArray().length, e.getGuild().getMembers().size(),
                     e.getGuild().getMembers().stream().filter(m -> m.getUser().isBot()).toArray().length, e.getGuild().getOwner().getUser().getIdLong(), e.getGuild().getOwner().getEffectiveName(),
-                    Misc.createInviteLink(e.getGuild()), e.getGuild().getIconUrl(), Tags.GAMING.toString(), Langs.ENGLISH.toString());
+                    invite, e.getGuild().getIconUrl(), Tags.GAMING.toString(), Langs.ENGLISH.toString());
+            Messages.send(e.getGuild(), e.getGuild().getOwner().getUser(), Messages.Message.NEW_GUILD_ADDED);
         }
     }
     /** bot leave*/

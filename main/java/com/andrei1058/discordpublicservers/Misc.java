@@ -25,12 +25,14 @@
 package com.andrei1058.discordpublicservers;
 
 import com.andrei1058.discordpublicservers.customisation.Langs;
+import com.andrei1058.discordpublicservers.customisation.Messages;
 import com.andrei1058.discordpublicservers.customisation.Tags;
 import net.dv8tion.jda.core.OnlineStatus;
 import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.Invite;
 import net.dv8tion.jda.core.entities.TextChannel;
+import net.dv8tion.jda.core.entities.User;
 import net.dv8tion.jda.core.utils.PermissionUtil;
 
 import static com.andrei1058.discordpublicservers.BOT.getBot;
@@ -41,7 +43,7 @@ public class Misc {
     public static String createInviteLink(Guild g) {
         String i = "";
         if (g.getDefaultChannel() != null) {
-            if (PermissionUtil.checkPermission(g.getDefaultChannel(), g.getSelfMember(), Permission.MANAGE_CHANNEL)) {
+            if (PermissionUtil.checkPermission(g.getDefaultChannel(), g.getSelfMember(), Permission.MANAGE_SERVER)) {
                 for (Invite i2 : g.getInvites().complete()) {
                     if (i2.getInviter() == getBot().getSelfUser()) {
                         if (i2.isTemporary()) {
@@ -56,7 +58,7 @@ public class Misc {
             }
         }
         for (TextChannel tc : g.getTextChannels()) {
-            if (PermissionUtil.checkPermission(tc, g.getSelfMember(), Permission.MANAGE_CHANNEL)) {
+            if (PermissionUtil.checkPermission(tc, g.getSelfMember(), Permission.MANAGE_SERVER)) {
                 for (Invite i2 : g.getInvites().complete()) {
                     if (i2.getInviter() == getBot().getSelfUser()) {
                         if (i2.isTemporary()) {
@@ -76,27 +78,29 @@ public class Misc {
             }
         }
         for (TextChannel tc : g.getTextChannels()) {
-            for (Invite i2 : g.getInvites().complete()) {
-                if (i2.getInviter() == getBot().getSelfUser()) {
-                    if (i2.isTemporary()) {
-                        if (PermissionUtil.checkPermission(tc, g.getSelfMember(), Permission.CREATE_INSTANT_INVITE)) {
-                            return g.getDefaultChannel().createInvite().setTemporary(false).complete().getURL();
-                        }
-                    } else {
-                        return i2.getURL();
-                    }
-                }
+            if (PermissionUtil.checkPermission(tc, g.getSelfMember(), Permission.CREATE_INSTANT_INVITE)) {
+                return g.getDefaultChannel().createInvite().setTemporary(false).complete().getURL();
             }
         }
-        //todo nu pot genera invite link! serverul tau nu va fi vizibil pe site. va recomandam sa ne dati acces la manage channel ca sa nu spamam in audit log
+        Messages.send(g, g.getOwner().getUser(), Messages.Message.CANT_CREATE_INVITE_LINK);
         return i;
     }
 
     public static void startUpRefresh() {
         for (Guild g : getBot().getGuilds()) {
+            if (getDatabase().isGuildBanned(g.getId())){
+                Messages.send(g, g.getOwner().getUser(), Messages.Message.CANT_SCAN_GUILD_BANED);
+                g.leave();
+                continue;
+            } else if (getDatabase().isUserBanned(g.getOwner().getUser().getId())){
+                Messages.send(g, g.getOwner().getUser(), Messages.Message.CANT_SCAN_USER_BANNED);
+                g.leave();
+                continue;
+            }
             if (getDatabase().isGuildExists(g.getId())) {
                 if (!getDatabase().isShown(g.getId())) {
                     getDatabase().showGuild(g.getId());
+                    Messages.send(g, g.getOwner().getUser(), Messages.Message.GUILD_RE_ADDED);
                 }
                 getDatabase().updateGuildData(g.getIdLong(), g.getName(), g.getMembers().stream()
                                 .filter(m -> !(m.getOnlineStatus() == OnlineStatus.OFFLINE || m.getOnlineStatus() == OnlineStatus.INVISIBLE)).toArray().length, g.getMembers().size(),
@@ -107,7 +111,33 @@ public class Misc {
                                 !(m.getOnlineStatus() == OnlineStatus.OFFLINE || m.getOnlineStatus() == OnlineStatus.INVISIBLE)).toArray().length, g.getMembers().size(),
                         g.getMembers().stream().filter(m -> m.getUser().isBot()).toArray().length, g.getOwner().getUser().getIdLong(), g.getOwner().getEffectiveName(),
                         Misc.createInviteLink(g), g.getIconUrl(), Tags.GAMING.toString(), Langs.ENGLISH.toString());
+                Messages.send(g, g.getOwner().getUser(), Messages.Message.NEW_GUILD_ADDED);
             }
         }
+    }
+
+    public static TextChannel getEmbed(Guild g){
+        for (TextChannel c : g.getTextChannels()){
+            if (PermissionUtil.checkPermission(c, g.getSelfMember(), Permission.MESSAGE_EMBED_LINKS)
+                    && PermissionUtil.checkPermission(c, g.getSelfMember(), Permission.MESSAGE_WRITE)){
+                return c;
+            }
+        }
+        return null;
+    }
+
+    public static TextChannel getText(Guild g){
+        for (TextChannel c : g.getTextChannels()){
+            if (PermissionUtil.checkPermission(c, g.getSelfMember(), Permission.MESSAGE_WRITE)){
+                return c;
+            }
+        }
+        return null;
+    }
+
+    public static boolean hasPrivateMessage(User u){
+        if (u.isFake()) return false;
+        if (u.hasPrivateChannel()) return true;
+        return false;
     }
 }

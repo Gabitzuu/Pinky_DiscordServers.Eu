@@ -24,7 +24,9 @@
 
 package com.andrei1058.discordpublicservers;
 
+import com.andrei1058.discordpublicservers.commands.Description;
 import com.andrei1058.discordpublicservers.commands.Help;
+import com.andrei1058.discordpublicservers.commands.Tags;
 import com.andrei1058.discordpublicservers.configuration.Config;
 import com.andrei1058.discordpublicservers.configuration.Database;
 import com.andrei1058.discordpublicservers.listeners.CollectData;
@@ -36,14 +38,18 @@ import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.JDABuilder;
 
 import javax.security.auth.login.LoginException;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 public class BOT {
 
     private static Config config;
     private static JDA bot;
     private static String version = "1.0beta";
-    private static String latUpdate = "19/02/2018 UTC+2";
+    private static String latUpdate = "20/02/2018 UTC+2";
     private static Database database;
+    public static final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 
 
      public static void main(String[] args){
@@ -60,10 +66,11 @@ public class BOT {
          getBot().addEventListener(new CollectData());
          getBot().setAutoReconnect(true);
          new Help("help");
+         new Description("setdesc");
+         new Tags("settags");
          database = new Database();
 
-         //todo check for new servers to save
-         //todo check for servers to remove
+         scheduler.schedule(new com.andrei1058.discordpublicservers.Runnable(), 24, TimeUnit.HOURS);
      }
 
     public static Config getConfig() {

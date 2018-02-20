@@ -44,11 +44,11 @@ public class Message extends ListenerAdapter {
             if (!var.isEmpty()){
                 String[] var2 = var.split(" ");
                 var = var.replaceFirst(var2[0], "");
-                if (var.startsWith(" ")) var.replaceFirst(" ", "");
+                if (var.startsWith(" ")) var = var.replaceFirst(" ", "");
                 String[] args = var.split(" ");
                 for (Command c : Command.getCommandList()){
                     if (c.getName().equalsIgnoreCase(var2[0])){
-                        c.execute(args, e.getTextChannel(), e.getMember(), e.getGuild());
+                        c.execute(args, e.getTextChannel(), e.getMember(), e.getGuild(), var);
                     }
                 }
             }

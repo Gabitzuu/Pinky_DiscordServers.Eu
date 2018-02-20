@@ -22,30 +22,12 @@
  * SOFTWARE.
  */
 
-package com.andrei1058.discordpublicservers.commands;
+package com.andrei1058.discordpublicservers;
 
-import net.dv8tion.jda.core.entities.*;
+public class Runnable implements java.lang.Runnable {
 
-import java.util.ArrayList;
-import java.util.List;
-
-public abstract class Command {
-
-    private static List<Command> commandList = new ArrayList<>();
-    String name;
-
-    public Command(String name){
-        this.name = name;
-        commandList.add(this);
-    }
-
-    public abstract void execute(String[] args, TextChannel c, Member sender, Guild g, String s);
-
-    public String getName() {
-        return name;
-    }
-
-    public static List<Command> getCommandList() {
-        return commandList;
+    @Override
+    public void run() {
+        Misc.startUpRefresh();
     }
 }

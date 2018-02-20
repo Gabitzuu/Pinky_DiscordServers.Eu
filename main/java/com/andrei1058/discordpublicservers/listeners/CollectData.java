@@ -27,7 +27,7 @@ package com.andrei1058.discordpublicservers.listeners;
 import com.andrei1058.discordpublicservers.Misc;
 import com.andrei1058.discordpublicservers.customisation.Langs;
 import com.andrei1058.discordpublicservers.customisation.Messages;
-import com.andrei1058.discordpublicservers.customisation.Tags;
+import com.andrei1058.discordpublicservers.customisation.Tag;
 import net.dv8tion.jda.core.OnlineStatus;
 import net.dv8tion.jda.core.events.guild.GuildJoinEvent;
 import net.dv8tion.jda.core.events.guild.GuildLeaveEvent;
@@ -78,7 +78,7 @@ public class CollectData extends ListenerAdapter {
             getDatabase().addNewServer(e.getGuild().getIdLong(), e.getGuild().getName(), e.getGuild().getMembers().stream().filter(m ->
             !(m.getOnlineStatus() == OnlineStatus.OFFLINE || m.getOnlineStatus() == OnlineStatus.INVISIBLE)).toArray().length, e.getGuild().getMembers().size(),
                     e.getGuild().getMembers().stream().filter(m -> m.getUser().isBot()).toArray().length, e.getGuild().getOwner().getUser().getIdLong(), e.getGuild().getOwner().getEffectiveName(),
-                    invite, e.getGuild().getIconUrl(), Tags.GAMING.toString(), Langs.ENGLISH.toString());
+                    invite, e.getGuild().getIconUrl(), Tag.GAMING.toString(), Langs.ENGLISH.toString());
             Messages.send(e.getGuild(), e.getGuild().getOwner().getUser(), Messages.Message.NEW_GUILD_ADDED);
         }
     }
@@ -95,34 +95,57 @@ public class CollectData extends ListenerAdapter {
     /** on_users && tot_users */
     @Override
     public void onUserOnlineStatusUpdate(UserOnlineStatusUpdateEvent e) {
-
+        if (getDatabase().isGuildExists(e.getGuild().getId())){
+            getDatabase().updateMembersCount(e.getGuild().getId(), e.getGuild().getMembers().stream().filter(m ->
+                    !(m.getOnlineStatus() == OnlineStatus.OFFLINE || m.getOnlineStatus() == OnlineStatus.INVISIBLE)).toArray().length, e.getGuild().getMembers().size());
+            //todo update date
+        }
     }
 
     /** on_users && tot_users && bot_amount */
     @Override
     public void onGuildMemberJoin(GuildMemberJoinEvent e){
-
+        if (getDatabase().isGuildExists(e.getGuild().getId())){
+            getDatabase().updateMembersCount(e.getGuild().getId(), e.getGuild().getMembers().stream().filter(m ->
+                    !(m.getOnlineStatus() == OnlineStatus.OFFLINE || m.getOnlineStatus() == OnlineStatus.INVISIBLE)).toArray().length, e.getGuild().getMembers().size());
+            getDatabase().updateBotsCount(e.getGuild().getId(), e.getGuild().getMembers().stream().filter(m -> m.getUser().isBot()).toArray().length);
+            getDatabase().updateLastTime(e.getGuild().getId());
+        }
     }
 
     /** on_users && tot_users && bot_amount */
     @Override
     public void onGuildMemberLeave(GuildMemberLeaveEvent e){
-
+        if (getDatabase().isGuildExists(e.getGuild().getId())){
+            getDatabase().updateMembersCount(e.getGuild().getId(), e.getGuild().getMembers().stream().filter(m ->
+                    !(m.getOnlineStatus() == OnlineStatus.OFFLINE || m.getOnlineStatus() == OnlineStatus.INVISIBLE)).toArray().length, e.getGuild().getMembers().size());
+            getDatabase().updateBotsCount(e.getGuild().getId(), e.getGuild().getMembers().stream().filter(m -> m.getUser().isBot()).toArray().length);
+            getDatabase().updateLastTime(e.getGuild().getId());
+        }
     }
 
     /** server_name */
     @Override
     public void onGuildUpdateName(GuildUpdateNameEvent e){
-
+        if (getDatabase().isGuildExists(e.getGuild().getId())){
+            getDatabase().updateGuildName(e.getGuild().getId(), e.getGuild().getName());
+            getDatabase().updateLastTime(e.getGuild().getId());
+        }
     }
 
     /** owner_id && owner_name */
     public void onGuildUpdateOwner(GuildUpdateOwnerEvent e){
-
+        if (getDatabase().isGuildExists(e.getGuild().getId())){
+            getDatabase().updateGuildOwner(e.getGuild().getId(), e.getGuild().getOwner().getUser().getName(), e.getGuild().getOwner().getUser().getIdLong());
+            getDatabase().updateLastTime(e.getGuild().getId());
+        }
     }
 
     /** server_icon */
     public void onGuildUpdateIcon(GuildUpdateIconEvent e){
-
+        if (getDatabase().isGuildExists(e.getGuild().getId())){
+            getDatabase().updateGuildIcon(e.getGuild().getId(), e.getGuild().getIconUrl());
+            getDatabase().updateLastTime(e.getGuild().getId());
+        }
     }
 }

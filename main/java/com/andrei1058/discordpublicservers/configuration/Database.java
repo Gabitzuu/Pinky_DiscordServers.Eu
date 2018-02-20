@@ -24,7 +24,11 @@
 
 package com.andrei1058.discordpublicservers.configuration;
 
+import sun.misc.BASE64Encoder;
+
+import java.io.UnsupportedEncodingException;
 import java.sql.*;
+import java.util.Base64;
 
 import static com.andrei1058.discordpublicservers.BOT.getBot;
 import static com.andrei1058.discordpublicservers.BOT.getConfig;
@@ -87,7 +91,7 @@ public class Database {
         if (!isConnected()) connect();
         try {
             ResultSet rs = connection.createStatement().executeQuery("SELECT reason FROM banned_servers WHERE server_id='"+id+"';");
-            return rs.getString(1);
+            return new String(Base64.getDecoder().decode(rs.getString(1)));
         } catch (SQLException e) {
             log(e.getMessage());
             return "";
@@ -98,7 +102,7 @@ public class Database {
         if (!isConnected()) connect();
         try {
             ResultSet rs = connection.createStatement().executeQuery("SELECT reason FROM banned_users WHERE server_id='"+id+"';");
-            return rs.getString(1);
+            return new String(Base64.getDecoder().decode(rs.getString(1)));
         } catch (SQLException e) {
             log(e.getMessage());
             return "";
@@ -122,9 +126,11 @@ public class Database {
             PreparedStatement ps = connection.prepareStatement("INSERT INTO banned_users VALUES(?,?,?);");
             ps.setInt(1, 0);
             ps.setLong(2, id);
-            ps.setString(3, reason);
+            ps.setString(3, Base64.getEncoder().encode(reason.getBytes("UTF-8")).toString());
             ps.executeUpdate();
         } catch (SQLException e) {
+            log(e.getMessage());
+        } catch (UnsupportedEncodingException e) {
             log(e.getMessage());
         }
     }
@@ -135,10 +141,12 @@ public class Database {
             PreparedStatement ps = connection.prepareStatement("INSERT INTO banned_servers VALUES(?,?,?);");
             ps.setInt(1, 0);
             ps.setLong(2, id);
-            ps.setString(3, reason);
+            ps.setString(3, Base64.getEncoder().encode(reason.getBytes("UTF-8")).toString());
             ps.executeUpdate();
         } catch (SQLException e) {
             log(e.getMessage());
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
         }
     }
 
@@ -166,14 +174,14 @@ public class Database {
             PreparedStatement ps = connection.prepareStatement("INSERT INTO servers VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);");
             ps.setInt(1, 0);
             ps.setLong(2, server_id);
-            ps.setDate(3, new Date(System.currentTimeMillis()));
-            ps.setString(4, server_name);
-            ps.setString(5, "A new Discord server :D");
+            ps.setTimestamp(3, new Timestamp(System.currentTimeMillis()));
+            ps.setString(4, Base64.getEncoder().encode(server_name.getBytes("UTF-8")).toString());
+            ps.setString(5, Base64.getEncoder().encode("A new Discord server :D".getBytes("UTF-8")).toString());
             ps.setInt(6, on_users);
             ps.setInt(7, tot_users);
             ps.setInt(8, bots);
-            ps.setDate(9, new Date(System.currentTimeMillis()));
-            ps.setDate(10, new Date(System.currentTimeMillis()));
+            ps.setTimestamp(9, new Timestamp(System.currentTimeMillis()));
+            ps.setTimestamp(10, new Timestamp(System.currentTimeMillis()));
             ps.setInt(11, 0);
             ps.setInt(12, 0);
             ps.setLong(13, owner_id);
@@ -186,22 +194,97 @@ public class Database {
             ps.executeUpdate();
         } catch (SQLException e) {
             log(e.getMessage());
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
         }
     }
 
     public void updateGuildData(long server_id, String server_name, int on_users, int tot_users, int bots, long owner_id, String owner_name, String invite_link, String server_icon){
         if (!isConnected()) connect();
         try {
-            PreparedStatement ps = connection.prepareStatement("UPDATE servers SET server_name=?, on_users=?, tot_users=?, bots=?, owner_id=?, owner_name=?, invite_link=?, server_icon=? WHERE server_id=?;");
-            ps.setString(1, server_name);
+            PreparedStatement ps = connection.prepareStatement("UPDATE servers SET server_name=?, on_users=?, tot_users=?, bots=?, owner_id=?, owner_name=?, last_update=?, invite_link=?, server_icon=? WHERE server_id=?;");
+            ps.setString(1, Base64.getEncoder().encode(server_name.getBytes("UTF-8")).toString());
             ps.setInt(2, on_users);
             ps.setInt(3, tot_users);
             ps.setInt(4, bots);
             ps.setLong(5, owner_id);
             ps.setString(6, owner_name);
-            ps.setString(7, invite_link);
-            ps.setString(8, server_icon);
-            ps.setLong(9, server_id);
+            ps.setTimestamp(7, new Timestamp(System.currentTimeMillis()));
+            ps.setString(8, invite_link);
+            ps.setString(9, server_icon);
+            ps.setLong(10, server_id);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            log(e.getMessage());
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void updateMembersCount(String id, int on, int tot){
+        if (!isConnected()) connect();
+        try {
+            PreparedStatement ps = connection.prepareStatement("UPDATE servers SET on_users=?, tot_users=? WHERE server_id='"+id+"';");
+            ps.setInt(1, on);
+            ps.setInt(2, tot);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            log(e.getMessage());
+        }
+    }
+
+    public void updateBotsCount(String id, int bots){
+        if (!isConnected()) connect();
+        try {
+            PreparedStatement ps = connection.prepareStatement("UPDATE servers SET bots=? WHERE server_id='"+id+"';");
+            ps.setInt(1, bots);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            log(e.getMessage());
+        }
+    }
+
+    public void updateGuildName(String id, String var){
+        if (!isConnected()) connect();
+        try {
+            PreparedStatement ps = connection.prepareStatement("UPDATE servers SET server_name=? WHERE server_id='"+id+"';");
+            ps.setString(1, Base64.getEncoder().encode(var.getBytes("UTF-8")).toString());
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            log(e.getMessage());
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void updateGuildOwner(String id, String var, long owner_id){
+        if (!isConnected()) connect();
+        try {
+            PreparedStatement ps = connection.prepareStatement("UPDATE servers SET owner_id=?, owner_name=? WHERE server_id='"+id+"';");
+            ps.setLong(1, owner_id);
+            ps.setString(2, var);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            log(e.getMessage());
+        }
+    }
+
+    public void updateGuildIcon(String id, String var){
+        if (!isConnected()) connect();
+        try {
+            PreparedStatement ps = connection.prepareStatement("UPDATE servers SET server_icon=? WHERE server_id='"+id+"';");
+            ps.setString(1, var);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            log(e.getMessage());
+        }
+    }
+
+    public void updateLastTime(String id){
+        if (!isConnected()) connect();
+        try {
+            PreparedStatement ps = connection.prepareStatement("UPDATE servers SET last_update=? WHERE server_id='"+id+"';");
+            ps.setTimestamp(1, new Timestamp(System.currentTimeMillis()));
             ps.executeUpdate();
         } catch (SQLException e) {
             log(e.getMessage());
@@ -226,10 +309,38 @@ public class Database {
         }
     }
 
+    public void updateDesc(String id, String desc){
+        if (!isConnected()) connect();
+        try {
+            byte[] d = new byte[0];
+            try {
+                d = desc.toString().getBytes("UTF-8");
+            } catch (UnsupportedEncodingException e) {
+                log(e.getMessage());
+            }
+            PreparedStatement ps = connection.prepareStatement("UPDATE servers SET server_desc=? WHERE server_id='"+id+"';");
+            ps.setString(1, Base64.getEncoder().encodeToString(d));
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            log(e.getMessage());
+        }
+    }
+
+    public void updateTags(String id, String var){
+        if (!isConnected()) connect();
+        try {
+            PreparedStatement ps = connection.prepareStatement("UPDATE servers SET tags=? WHERE server_id='"+id+"';");
+            ps.setString(1, var.toUpperCase());
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            log(e.getMessage());
+        }
+    }
+
     public boolean isShown(String id){
         if (!isConnected()) connect();
         try {
-            ResultSet rs = connection.createStatement().executeQuery("SELECT server_name FROM servers WHERE server_id='"+id+"'");
+            ResultSet rs = connection.createStatement().executeQuery("SELECT server_name FROM servers WHERE server_id='"+id+"';");
             return rs.next();
         } catch (SQLException e) {
             log(e.getMessage());

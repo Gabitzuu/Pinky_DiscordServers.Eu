@@ -49,8 +49,6 @@ public class Messages {
                     b.setDescription("Your server was added!");
                     b.addField("00help", "Main command.", true);
                     Misc.getEmbed(g).sendMessage(b.build()).queue();
-                    net.dv8tion.jda.core.entities.Message mes = Misc.getEmbed(g).sendMessage(u.getAsMention()).complete();
-
                 } else if (Misc.getText(g) != null){
                     Misc.getText(g).sendMessage(":blobaww:\nYour server was added on **DiscordServers.Eu**\nMain command: `00help`").queue();
                 }
@@ -144,20 +142,20 @@ public class Messages {
                     b.setTitle("DiscordServers.Eu", getConfig().getLogo());
                     b.setThumbnail(getConfig().getLogo());
                     b.setAuthor(getBot().getSelfUser().getName(), "https://discordpublicservers.com", getBot().getSelfUser().getAvatarUrl());
-                    b.setDescription("I can't create invites on this server.\nPlease create a new role for me with those perms.\nManage Channel is optional and it is required to pervert audit logs spam.");
+                    b.setDescription("I can't create invites on this server.\nPlease create a new role for me with those perms.\nManage Channel is optional and it is required to prevent audit logs spam.");
                     b.setImage("https://i.imgur.com/H93NxI6.png");
                     Misc.getEmbed(g).sendMessage(b.build()).queue();
 
                 } else if (Misc.getText(g) != null){
                     Misc.getText(g).sendMessage("I can't create invites on this server.\nPlease create a new role for me with those permissions." +
-                            "\nManage Channel is optional and it is required to pervert audit logs spam.\nhttps://i.imgur.com/H93NxI6.png").queue();
+                            "\nManage Channel is optional and it is required to prevent audit logs spam.\nhttps://i.imgur.com/H93NxI6.png").queue();
                 }
                 try {
                     EmbedBuilder b = new EmbedBuilder();
                     b.setTitle("DiscordServers.Eu", getConfig().getLogo());
                     b.setThumbnail(getConfig().getLogo());
                     b.setAuthor(getBot().getSelfUser().getName(), "https://discordpublicservers.com", getBot().getSelfUser().getAvatarUrl());
-                    b.setDescription("I can't create invites on `"+g.getName()+"`.\nPlease create a new role for me with those perms.\nManage Channel is optional and it is required to pervert audit logs spam.");
+                    b.setDescription("I can't create invites on `"+g.getName()+"`.\nPlease create a new role for me with those perms.\nManage Channel is optional and it is required to prevent audit logs spam.");
                     b.setImage("https://i.imgur.com/H93NxI6.png");
                     u.openPrivateChannel().complete().sendMessage(b.build()).queue();
                 } catch (Exception e){

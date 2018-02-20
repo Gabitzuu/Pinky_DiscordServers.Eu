@@ -36,7 +36,7 @@ public class Config {
     InputStream in;
 
     private String token, host, port, user, pass, statusType, statusMsg, streamLink, ownerID;
-    private String logo = "https://discordpublicservers.com/inc/logo.png";
+    private String logo = "https://discordpublicservers.com/inc/logo.png", serviceLink = "https://discordpublicservers.com";
     private OnlineStatus status;
 
     public Config() {
@@ -185,5 +185,9 @@ public class Config {
 
     public String getLogo() {
         return logo;
+    }
+
+    public String getServiceLink() {
+        return serviceLink;
     }
 }

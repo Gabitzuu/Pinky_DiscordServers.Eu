@@ -26,13 +26,12 @@ package com.andrei1058.discordpublicservers;
 
 import com.andrei1058.discordpublicservers.customisation.Langs;
 import com.andrei1058.discordpublicservers.customisation.Messages;
-import com.andrei1058.discordpublicservers.customisation.Tags;
+import com.andrei1058.discordpublicservers.customisation.Tag;
 import net.dv8tion.jda.core.OnlineStatus;
 import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.Invite;
 import net.dv8tion.jda.core.entities.TextChannel;
-import net.dv8tion.jda.core.entities.User;
 import net.dv8tion.jda.core.utils.PermissionUtil;
 
 import static com.andrei1058.discordpublicservers.BOT.getBot;
@@ -48,7 +47,7 @@ public class Misc {
                     if (i2.getInviter() == getBot().getSelfUser()) {
                         if (i2.isTemporary()) {
                             if (PermissionUtil.checkPermission(g.getDefaultChannel(), g.getSelfMember(), Permission.CREATE_INSTANT_INVITE)) {
-                                return g.getDefaultChannel().createInvite().setTemporary(false).complete().getURL();
+                                return g.getDefaultChannel().createInvite().setMaxAge(0).complete().getURL();
                             }
                         } else {
                             return i2.getURL();
@@ -63,7 +62,7 @@ public class Misc {
                     if (i2.getInviter() == getBot().getSelfUser()) {
                         if (i2.isTemporary()) {
                             if (PermissionUtil.checkPermission(tc, g.getSelfMember(), Permission.CREATE_INSTANT_INVITE)) {
-                                return g.getDefaultChannel().createInvite().setTemporary(false).complete().getURL();
+                                return g.getDefaultChannel().createInvite().setMaxAge(0).complete().getURL();
                             }
                         } else {
                             return i2.getURL();
@@ -74,12 +73,12 @@ public class Misc {
         }
         if (g.getDefaultChannel() != null) {
             if (PermissionUtil.checkPermission(g.getDefaultChannel(), g.getSelfMember(), Permission.CREATE_INSTANT_INVITE)) {
-                return g.getDefaultChannel().createInvite().setTemporary(false).complete().getURL();
+                return g.getDefaultChannel().createInvite().setMaxAge(0).complete().getURL();
             }
         }
         for (TextChannel tc : g.getTextChannels()) {
             if (PermissionUtil.checkPermission(tc, g.getSelfMember(), Permission.CREATE_INSTANT_INVITE)) {
-                return g.getDefaultChannel().createInvite().setTemporary(false).complete().getURL();
+                return g.getDefaultChannel().createInvite().setMaxAge(0).complete().getURL();
             }
         }
         Messages.send(g, g.getOwner().getUser(), Messages.Message.CANT_CREATE_INVITE_LINK);
@@ -97,6 +96,8 @@ public class Misc {
                 g.leave();
                 continue;
             }
+            String i = Misc.createInviteLink(g);
+            if (i.isEmpty()) continue;
             if (getDatabase().isGuildExists(g.getId())) {
                 if (!getDatabase().isShown(g.getId())) {
                     getDatabase().showGuild(g.getId());
@@ -105,12 +106,12 @@ public class Misc {
                 getDatabase().updateGuildData(g.getIdLong(), g.getName(), g.getMembers().stream()
                                 .filter(m -> !(m.getOnlineStatus() == OnlineStatus.OFFLINE || m.getOnlineStatus() == OnlineStatus.INVISIBLE)).toArray().length, g.getMembers().size(),
                         g.getMembers().stream().filter(m -> m.getUser().isBot()).toArray().length, g.getOwner().getUser().getIdLong(), g.getOwner().getEffectiveName(),
-                        Misc.createInviteLink(g), g.getIconUrl());
+                        i, g.getIconUrl());
             } else {
                 getDatabase().addNewServer(g.getIdLong(), g.getName(), g.getMembers().stream().filter(m ->
                                 !(m.getOnlineStatus() == OnlineStatus.OFFLINE || m.getOnlineStatus() == OnlineStatus.INVISIBLE)).toArray().length, g.getMembers().size(),
                         g.getMembers().stream().filter(m -> m.getUser().isBot()).toArray().length, g.getOwner().getUser().getIdLong(), g.getOwner().getEffectiveName(),
-                        Misc.createInviteLink(g), g.getIconUrl(), Tags.GAMING.toString(), Langs.ENGLISH.toString());
+                        i, g.getIconUrl(), Tag.GAMING.toString(), Langs.ENGLISH.toString());
                 Messages.send(g, g.getOwner().getUser(), Messages.Message.NEW_GUILD_ADDED);
             }
         }
@@ -135,9 +136,4 @@ public class Misc {
         return null;
     }
 
-    public static boolean hasPrivateMessage(User u){
-        if (u.isFake()) return false;
-        if (u.hasPrivateChannel()) return true;
-        return false;
-    }
 }

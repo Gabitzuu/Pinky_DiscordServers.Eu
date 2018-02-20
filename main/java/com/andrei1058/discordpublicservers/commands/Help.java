@@ -42,8 +42,8 @@ public class Help extends Command {
     }
 
     @Override
-    public void execute(String[] args, TextChannel c, Member sender, Guild g) {
-        if (!PermissionUtil.checkPermission(c, g.getSelfMember(), Permission.MESSAGE_WRITE)) return;
+    public void execute(String[] args, TextChannel c, Member sender, Guild g, String string) {
+        if (!PermissionUtil.checkPermission(c, g.getSelfMember(), Permission.MESSAGE_WRITE)) /* todo msg can't write on this channel */ return;
         /** check if bot can send embed links*/
         if (PermissionUtil.checkPermission(c, g.getSelfMember(), Permission.MESSAGE_EMBED_LINKS)) {
             /** service owner commands*/
@@ -51,7 +51,7 @@ public class Help extends Command {
                 EmbedBuilder eb = new EmbedBuilder();
                 eb.setTitle("DiscordServers.Eu", getConfig().getLogo());
                 eb.setThumbnail(getConfig().getLogo());
-                eb.setAuthor(getBot().getSelfUser().getName(), "https://discordpublicservers.com", getBot().getSelfUser().getAvatarUrl());
+                eb.setAuthor(getBot().getSelfUser().getName(), getConfig().getServiceLink(), getBot().getSelfUser().getAvatarUrl());
                 eb.addField("00stop", "Shutdown dps.", true);
                 eb.addField("00restart", "Restart dps.", true);
                 eb.addField("00banUser", "Ban a user.", true);
@@ -73,7 +73,7 @@ public class Help extends Command {
                 EmbedBuilder eb = new EmbedBuilder();
                 eb.setTitle("DiscordServers.Eu", getConfig().getLogo());
                 eb.setThumbnail(getConfig().getLogo());
-                eb.setAuthor(getBot().getSelfUser().getName(), "https://discordpublicservers.com", getBot().getSelfUser().getAvatarUrl());
+                eb.setAuthor(getBot().getSelfUser().getName(), getConfig().getServiceLink(), getBot().getSelfUser().getAvatarUrl());
                 eb.addField("00bump", "Bump this sv.", true);
                 eb.addField("00setLang", "Set sv languages.", true);
                 eb.addField("00setTags", "Set sv categories.", true);

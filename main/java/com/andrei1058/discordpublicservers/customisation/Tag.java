@@ -24,6 +24,25 @@
 
 package com.andrei1058.discordpublicservers.customisation;
 
-public enum Tags {
-    GAMING
+public enum Tag {
+    GAMING, WEBSITE, LIFESTYLE, LANGUAGES;
+
+    public static String getDesc(Tag t) {
+        String v = "";
+        switch (t) {
+            case GAMING:
+                v = "Play games";
+                break;
+            case WEBSITE:
+                v = "WEBSITE community";
+                break;
+            case LIFESTYLE:
+                v = "Way of living";
+                break;
+            case LANGUAGES:
+                v = "Learn languages";
+                break;
+        }
+        return v;
+    }
 }

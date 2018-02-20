@@ -326,10 +326,34 @@ public class Database {
         }
     }
 
+    public Timestamp getLastBump(String id){
+        if (!isConnected()) connect();
+        try {
+            ResultSet rs = connection.createStatement().executeQuery("SELECT last_bump FROM servers WHERE server_id='"+id+"';");
+            if (rs.next()){
+                return rs.getTimestamp(1);
+            }
+        } catch (SQLException e) {
+            log(e.getMessage());
+        }
+        return null;
+    }
+
     public void updateTags(String id, String var){
         if (!isConnected()) connect();
         try {
             PreparedStatement ps = connection.prepareStatement("UPDATE servers SET tags=? WHERE server_id='"+id+"';");
+            ps.setString(1, var.toUpperCase());
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            log(e.getMessage());
+        }
+    }
+
+    public void updateLanguage(String id, String var){
+        if (!isConnected()) connect();
+        try {
+            PreparedStatement ps = connection.prepareStatement("UPDATE servers SET langs=? WHERE server_id='"+id+"';");
             ps.setString(1, var.toUpperCase());
             ps.executeUpdate();
         } catch (SQLException e) {
@@ -345,6 +369,30 @@ public class Database {
         } catch (SQLException e) {
             log(e.getMessage());
             return false;
+        }
+    }
+
+    public boolean isPremium(String id){
+        if (!isConnected()) connect();
+        try {
+            ResultSet rs = connection.createStatement().executeQuery("SELECT premium FROM servers WHERE server_id='"+id+"';");
+            if (rs.next()){
+                if (rs.getInt(1) == 1) return true;
+            }
+            return false;
+        } catch (SQLException e) {
+            log(e.getMessage());
+            return false;
+        }
+    }
+
+    public void bumpGuild(String id){
+        if (!isConnected()) connect();
+        try {
+            ResultSet rs = connection.createStatement().executeQuery("SELECT MAX(id) FROM servers");
+            connection.createStatement().executeUpdate("UPDATE servers SET id='"+rs.getInt(1)+"', WHERE server_id='"+id+"';");
+        } catch (SQLException e) {
+            log(e.getMessage());
         }
     }
 

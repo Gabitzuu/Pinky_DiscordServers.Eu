@@ -24,9 +24,7 @@
 
 package com.andrei1058.discordpublicservers;
 
-import com.andrei1058.discordpublicservers.commands.Description;
-import com.andrei1058.discordpublicservers.commands.Help;
-import com.andrei1058.discordpublicservers.commands.Tags;
+import com.andrei1058.discordpublicservers.commands.*;
 import com.andrei1058.discordpublicservers.configuration.Config;
 import com.andrei1058.discordpublicservers.configuration.Database;
 import com.andrei1058.discordpublicservers.listeners.CollectData;
@@ -68,6 +66,8 @@ public class BOT {
          new Help("help");
          new Description("setdesc");
          new Tags("settags");
+         new Lang("setlang");
+         new Bump("bump");
          database = new Database();
 
          scheduler.schedule(new com.andrei1058.discordpublicservers.Runnable(), 24, TimeUnit.HOURS);

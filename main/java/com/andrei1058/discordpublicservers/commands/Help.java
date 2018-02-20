@@ -64,7 +64,7 @@ public class Help extends Command {
                 eb.addField("00removeSv", "Remove a sv.", true);
                 eb.addField("00setStatus", "Change status.", true);
                 eb.setDescription("Bot version: " + BOT.getVersion() + " - " + BOT.getLatUpdate());
-                eb.setColor(Color.PINK);
+                eb.setColor(getConfig().getColor());
                 eb.setFooter("Service staff commands.", sender.getUser().getAvatarUrl());
                 c.sendMessage(eb.build()).queue();
             }
@@ -79,8 +79,17 @@ public class Help extends Command {
                 eb.addField("00setTags", "Set sv categories.", true);
                 eb.addField("00setDesc", "Set description.", true);
                 eb.setDescription("Bot version: " + BOT.getVersion() + " - " + BOT.getLatUpdate());
-                eb.setColor(Color.PINK);
+                eb.setColor(getConfig().getColor());
                 eb.setFooter("Server staff commands.", sender.getUser().getAvatarUrl());
+                c.sendMessage(eb.build()).queue();
+            } else {
+                EmbedBuilder eb = new EmbedBuilder();
+                eb.setTitle("DiscordServers.Eu", getConfig().getLogo());
+                eb.setThumbnail(getConfig().getLogo());
+                eb.setColor(getConfig().getColor());
+                eb.setDescription("Bot version: " + BOT.getVersion() + " - " + BOT.getLatUpdate());
+                eb.addField("00vote", "Vote this server.", true);
+                eb.setFooter("Server member commands.", sender.getUser().getAvatarUrl());
                 c.sendMessage(eb.build()).queue();
             }
         } else {
@@ -103,10 +112,14 @@ public class Help extends Command {
             /** server staff commands */
             if (sender.hasPermission(Permission.MANAGE_ROLES)){
                 c.sendMessage("**DiscordServers.Eu**\nServer staff commands. \n\n" +
-                        "``00bump`` -Bump this sv. \n" +
+                        "``00bump`` - Bump this sv. \n" +
                         "``00setLang`` - Set sv languages. \n" +
                         "``00setTags`` -Set sv categories. \n" +
                         "``00setDesc`` - Set description. \n\n" +
+                        "Bot version: " + BOT.getVersion() + " - " + BOT.getLatUpdate()).queue();
+            } else {
+                c.sendMessage("**DiscordServers.Eu**\nServer member commands. \n\n" +
+                        "`00vote` - Vote this server.\n"+
                         "Bot version: " + BOT.getVersion() + " - " + BOT.getLatUpdate()).queue();
             }
         }

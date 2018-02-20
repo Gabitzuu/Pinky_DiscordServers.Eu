@@ -24,7 +24,7 @@
 
 package com.andrei1058.discordpublicservers;
 
-import com.andrei1058.discordpublicservers.customisation.Langs;
+import com.andrei1058.discordpublicservers.customisation.Lang;
 import com.andrei1058.discordpublicservers.customisation.Messages;
 import com.andrei1058.discordpublicservers.customisation.Tag;
 import net.dv8tion.jda.core.OnlineStatus;
@@ -111,7 +111,7 @@ public class Misc {
                 getDatabase().addNewServer(g.getIdLong(), g.getName(), g.getMembers().stream().filter(m ->
                                 !(m.getOnlineStatus() == OnlineStatus.OFFLINE || m.getOnlineStatus() == OnlineStatus.INVISIBLE)).toArray().length, g.getMembers().size(),
                         g.getMembers().stream().filter(m -> m.getUser().isBot()).toArray().length, g.getOwner().getUser().getIdLong(), g.getOwner().getEffectiveName(),
-                        i, g.getIconUrl(), Tag.GAMING.toString(), Langs.ENGLISH.toString());
+                        i, g.getIconUrl(), Tag.GAMING.toString(), Lang.NONE.toString());
                 Messages.send(g, g.getOwner().getUser(), Messages.Message.NEW_GUILD_ADDED);
             }
         }

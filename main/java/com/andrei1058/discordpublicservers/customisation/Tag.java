@@ -25,7 +25,7 @@
 package com.andrei1058.discordpublicservers.customisation;
 
 public enum Tag {
-    GAMING, WEBSITE, LIFESTYLE, LANGUAGES;
+    GAMING, WEBSITE, LIFESTYLE, LANGUAGES, ANIME, MOVIES, SERVICES, PROGRAMMING, MUSIC, EDUCATION, YOUTUBE;
 
     public static String getDesc(Tag t) {
         String v = "";
@@ -34,13 +34,34 @@ public enum Tag {
                 v = "Play games";
                 break;
             case WEBSITE:
-                v = "WEBSITE community";
+                v = "Website community";
                 break;
             case LIFESTYLE:
                 v = "Way of living";
                 break;
             case LANGUAGES:
                 v = "Learn languages";
+                break;
+            case ANIME:
+                v = "Anime talk";
+                break;
+            case MOVIES:
+                v = "Movies talk";
+                break;
+            case SERVICES:
+                v = "Offering services";
+                break;
+            case PROGRAMMING:
+                v = "Programming related";
+                break;
+            case MUSIC:
+                v = "Music bot";
+                break;
+            case EDUCATION:
+                v = "Learn something";
+                break;
+            case YOUTUBE:
+                v = "Youtube channel";
                 break;
         }
         return v;

@@ -25,7 +25,7 @@
 package com.andrei1058.discordpublicservers.listeners;
 
 import com.andrei1058.discordpublicservers.Misc;
-import com.andrei1058.discordpublicservers.customisation.Langs;
+import com.andrei1058.discordpublicservers.customisation.Lang;
 import com.andrei1058.discordpublicservers.customisation.Messages;
 import com.andrei1058.discordpublicservers.customisation.Tag;
 import net.dv8tion.jda.core.OnlineStatus;
@@ -78,7 +78,7 @@ public class CollectData extends ListenerAdapter {
             getDatabase().addNewServer(e.getGuild().getIdLong(), e.getGuild().getName(), e.getGuild().getMembers().stream().filter(m ->
             !(m.getOnlineStatus() == OnlineStatus.OFFLINE || m.getOnlineStatus() == OnlineStatus.INVISIBLE)).toArray().length, e.getGuild().getMembers().size(),
                     e.getGuild().getMembers().stream().filter(m -> m.getUser().isBot()).toArray().length, e.getGuild().getOwner().getUser().getIdLong(), e.getGuild().getOwner().getEffectiveName(),
-                    invite, e.getGuild().getIconUrl(), Tag.GAMING.toString(), Langs.ENGLISH.toString());
+                    invite, e.getGuild().getIconUrl(), Tag.GAMING.toString(), Lang.NONE.toString());
             Messages.send(e.getGuild(), e.getGuild().getOwner().getUser(), Messages.Message.NEW_GUILD_ADDED);
         }
     }

@@ -59,18 +59,32 @@ public class Tags extends Command {
                         eb.addField(t.toString(), t.getDesc(t), true);
                     }
                     eb.setFooter("Usage: 00setTags GAMING WEBSITE", sender.getUser().getAvatarUrl());
-                    eb.setColor(Color.PINK);
+                    eb.setColor(getConfig().getColor());
                     c.sendMessage(eb.build()).queue();
                 }
             } else {
                 if (getDatabase().isGuildExists(g.getId())){
+                    if (args.length > 4 && (!getDatabase().isPremium(g.getId()))){
+                        EmbedBuilder eb = new EmbedBuilder();
+                        eb.setTitle("Sorry");
+                        eb.setDescription("You can't add so many tags.\nPremium guilds can have up to 10 categories.\n Consider upgrading to premium for more features.");
+                        eb.setColor(getConfig().getColor());
+                        c.sendMessage(eb.build()).queue();
+                        return;
+                    } else if (args.length > 10){
+                        EmbedBuilder eb = new EmbedBuilder();
+                        eb.setTitle("Sorry");
+                        eb.setDescription("You can't add so many tags.");
+                        eb.setColor(getConfig().getColor());
+                        c.sendMessage(eb.build()).queue();
+                    }
                     for (String  s : args){
                         try {
                             Tag.valueOf(s.toUpperCase());
                         } catch (Exception e){
                             EmbedBuilder eb = new EmbedBuilder();
                             eb.setDescription("Invalid tag: `"+s+"`");
-                            eb.setColor(Color.PINK);
+                            eb.setColor(getConfig().getColor());
                             c.sendMessage(eb.build()).queue();
                             EmbedBuilder eb2 = new EmbedBuilder();
                             eb2.setThumbnail(getConfig().getLogo());
@@ -79,21 +93,22 @@ public class Tags extends Command {
                                 eb2.addField(t.toString(), t.getDesc(t), true);
                             }
                             eb2.setFooter("Usage: 00setTags GAMING WEBSITE", sender.getUser().getAvatarUrl());
-                            eb2.setColor(Color.PINK);
+                            eb2.setColor(getConfig().getColor());
                             c.sendMessage(eb2.build()).queue();
                             return;
                         }
                     }
                     getDatabase().updateTags(g.getId(), string);
+                    getDatabase().updateLastTime(g.getId());
                     EmbedBuilder eb = new EmbedBuilder();
                     eb.setDescription("Tags saved: `"+string+"`");
-                    eb.setColor(Color.PINK);
+                    eb.setColor(getConfig().getColor());
                     c.sendMessage(eb.build()).queue();
                     log("Tags update on: "+g.getName()+": "+string);
                 } else {
                     EmbedBuilder eb = new EmbedBuilder();
                     eb.setDescription("Your server isn't in our database.");
-                    eb.setColor(Color.PINK);
+                    eb.setColor(getConfig().getColor());
                     c.sendMessage(eb.build()).queue();
                 }
             }
@@ -119,6 +134,14 @@ public class Tags extends Command {
                         return;
                     }
                     if (getDatabase().isGuildExists(g.getId())){
+                        if (args.length > 4 && (!getDatabase().isPremium(g.getId()))){
+                            c.sendMessage("Sorry").queue();
+                            c.sendMessage("You can't add so many tags.\nPremium guilds can have up to 10 categories.\n Consider upgrading to premium for more features.").queue();
+                            return;
+                        } else if (args.length > 10){
+                            c.sendMessage("Sorry").queue();
+                            c.sendMessage("You can't add so many tags.").queue();
+                        }
                         for (String  s : args) {
                             try {
                                 Tag.valueOf(s.toUpperCase());

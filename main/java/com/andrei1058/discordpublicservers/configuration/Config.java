@@ -26,6 +26,7 @@ package com.andrei1058.discordpublicservers.configuration;
 
 import net.dv8tion.jda.core.OnlineStatus;
 
+import java.awt.*;
 import java.io.*;
 import java.util.Properties;
 
@@ -38,6 +39,7 @@ public class Config {
     private String token, host, port, user, pass, statusType, statusMsg, streamLink, ownerID;
     private String logo = "https://discordpublicservers.com/inc/logo.png", serviceLink = "https://discordpublicservers.com";
     private OnlineStatus status;
+    private Color color = Color.PINK;
 
     public Config() {
         properties = new Properties();
@@ -189,5 +191,9 @@ public class Config {
 
     public String getServiceLink() {
         return serviceLink;
+    }
+
+    public Color getColor() {
+        return color;
     }
 }

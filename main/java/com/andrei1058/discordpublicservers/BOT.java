@@ -27,6 +27,8 @@ package com.andrei1058.discordpublicservers;
 import com.andrei1058.discordpublicservers.commands.*;
 import com.andrei1058.discordpublicservers.commands.member.Vote;
 import com.andrei1058.discordpublicservers.commands.server.*;
+import com.andrei1058.discordpublicservers.commands.service.Restart;
+import com.andrei1058.discordpublicservers.commands.service.Stop;
 import com.andrei1058.discordpublicservers.configuration.Config;
 import com.andrei1058.discordpublicservers.configuration.Database;
 import com.andrei1058.discordpublicservers.listeners.CollectData;
@@ -43,6 +45,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import static com.andrei1058.discordpublicservers.misc.Misc.createStartScript;
+
 public class BOT {
 
     private static Config config;
@@ -51,6 +55,7 @@ public class BOT {
     private static String latUpdate = "21/02/2018 UTC+2";
     private static Database database;
     public static final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+    private static Runnable runnable = new Runnable();
 
 
      public static void main(String[] args){
@@ -74,9 +79,13 @@ public class BOT {
          new Vote("vote");
          new Feedback("feedback");
          new Votes("votes");
+         new Stop("stop");
+         new Restart("restart");
          database = new Database();
 
-         scheduler.schedule(new Runnable(), 24, TimeUnit.HOURS);
+         scheduler.schedule(runnable, 24, TimeUnit.HOURS);
+
+         createStartScript();
 
          //todo check if service owner is friend else add it (send errors and feedback in dm)
      }
@@ -103,5 +112,9 @@ public class BOT {
 
     public static void log(String message){
          System.out.println(message);
+    }
+
+    public static Runnable getRunnable() {
+        return runnable;
     }
 }

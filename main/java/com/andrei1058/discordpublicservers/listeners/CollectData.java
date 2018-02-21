@@ -28,7 +28,9 @@ import com.andrei1058.discordpublicservers.misc.Misc;
 import com.andrei1058.discordpublicservers.customisation.Lang;
 import com.andrei1058.discordpublicservers.customisation.Messages;
 import com.andrei1058.discordpublicservers.customisation.Tag;
+import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.OnlineStatus;
+import net.dv8tion.jda.core.entities.PrivateChannel;
 import net.dv8tion.jda.core.events.guild.GuildJoinEvent;
 import net.dv8tion.jda.core.events.guild.GuildLeaveEvent;
 import net.dv8tion.jda.core.events.guild.member.GuildMemberJoinEvent;
@@ -39,7 +41,9 @@ import net.dv8tion.jda.core.events.guild.update.GuildUpdateOwnerEvent;
 import net.dv8tion.jda.core.events.user.UserOnlineStatusUpdateEvent;
 import net.dv8tion.jda.core.hooks.ListenerAdapter;
 
+import static com.andrei1058.discordpublicservers.BOT.getConfig;
 import static com.andrei1058.discordpublicservers.BOT.getDatabase;
+import static com.andrei1058.discordpublicservers.BOT.log;
 
 public class CollectData extends ListenerAdapter {
 
@@ -110,6 +114,21 @@ public class CollectData extends ListenerAdapter {
                     !(m.getOnlineStatus() == OnlineStatus.OFFLINE || m.getOnlineStatus() == OnlineStatus.INVISIBLE)).toArray().length, e.getGuild().getMembers().size());
             getDatabase().updateBotsCount(e.getGuild().getId(), e.getGuild().getMembers().stream().filter(m -> m.getUser().isBot()).toArray().length);
             getDatabase().updateLastTime(e.getGuild().getId());
+        }
+        if (e.getMember().getUser().getId().equalsIgnoreCase(getConfig().getOwnerID())){
+            EmbedBuilder eb = new EmbedBuilder();
+            eb.setColor(getConfig().getColor());
+            eb.setTitle(e.getGuild().getName());
+            eb.setThumbnail(e.getGuild().getIconUrl());
+            eb.setDescription("Service owner has join your server");
+            eb.setFooter(e.getMember().getUser().getName()+"#"+e.getMember().getUser().getDiscriminator(), e.getMember().getUser().getAvatarUrl());
+            try {
+                PrivateChannel privateChannel = e.getGuild().getOwner().getUser().openPrivateChannel().complete();
+                privateChannel.sendMessage(eb.build()).queue();
+            } catch (Exception ex){
+                log(ex.getMessage());
+                ex.printStackTrace();
+            }
         }
     }
 

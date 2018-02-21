@@ -34,6 +34,8 @@ import net.dv8tion.jda.core.entities.Invite;
 import net.dv8tion.jda.core.entities.TextChannel;
 import net.dv8tion.jda.core.utils.PermissionUtil;
 
+import java.io.*;
+
 import static com.andrei1058.discordpublicservers.BOT.getBot;
 import static com.andrei1058.discordpublicservers.BOT.getDatabase;
 
@@ -134,6 +136,27 @@ public class Misc {
             }
         }
         return null;
+    }
+
+    public static void createStartScript(){
+        File f = new File("start.bat");
+        if (!f.exists()){
+            try {
+                f.createNewFile();
+            } catch (IOException e) {
+                e.printStackTrace();
+            } finally {
+                try {
+                    PrintWriter pw = new PrintWriter("start.bat", "UTF-8");
+                    pw.println("java -jar discordpublicservers-1.0-SNAPSHOT-jar-with-dependencies.jar");
+                    pw.close();
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                } catch (UnsupportedEncodingException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
     }
 
 }

@@ -37,7 +37,8 @@ public class Config {
     InputStream in;
 
     private String token, host, port, user, pass, statusType, statusMsg, streamLink, ownerID;
-    private String logo = "https://discordpublicservers.com/inc/logo.png", serviceLink = "https://discordpublicservers.com";
+    private String logo = "https://discordpublicservers.com/inc/logo.png", serviceLink = "https://discordpublicservers.com",
+    restartCmd = "./start.sh";
     private OnlineStatus status;
     private Color color = Color.PINK;
 
@@ -195,5 +196,9 @@ public class Config {
 
     public Color getColor() {
         return color;
+    }
+
+    public String getRestartCmd() {
+        return restartCmd;
     }
 }

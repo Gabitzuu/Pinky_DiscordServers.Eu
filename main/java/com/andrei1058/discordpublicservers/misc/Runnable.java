@@ -30,4 +30,8 @@ public class Runnable implements java.lang.Runnable {
     public void run() {
         Misc.startUpRefresh();
     }
+
+    public void stop(){
+        Thread.currentThread().interrupt();
+    }
 }

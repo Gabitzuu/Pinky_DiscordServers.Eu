@@ -73,7 +73,7 @@ public class Messages {
                     b.setDescription("Your server was added!");
                     b.addField("00help", "Main command.", true);
                     Misc.getEmbed(g).sendMessage(b.build()).queue();
-                    net.dv8tion.jda.core.entities.Message mes = Misc.getEmbed(g).sendMessage(u.getAsMention()).complete();
+                    Misc.getEmbed(g).sendMessage(u.getAsMention()).complete();
 
                 } else if (Misc.getText(g) != null){
                     Misc.getText(g).sendMessage(":blobaww:\nYour server was added on **DiscordServers.Eu**\nMain command: `00help`").queue();
@@ -119,7 +119,7 @@ public class Messages {
                     b.setTitle("DiscordServers.Eu", getConfig().getLogo());
                     b.setThumbnail(getConfig().getLogo());
                     b.setAuthor(getBot().getSelfUser().getName(), "https://discordpublicservers.com", getBot().getSelfUser().getAvatarUrl());
-                    b.setDescription("I can't stay on this server because the owner is banned.\nReason: `"+getDatabase().getGuildBanReason(g.getId())+"`");
+                    b.setDescription("I can't stay on this server because the owner is banned.\nReason: "+getDatabase().getGuildBanReason(g.getId())+"");
                     Misc.getEmbed(g).sendMessage(b.build()).queue();
 
                 } else if (Misc.getText(g) != null){
@@ -130,7 +130,7 @@ public class Messages {
                     b.setTitle("DiscordServers.Eu", getConfig().getLogo());
                     b.setThumbnail(getConfig().getLogo());
                     b.setAuthor(getBot().getSelfUser().getName(), "https://discordpublicservers.com", getBot().getSelfUser().getAvatarUrl());
-                    b.setDescription("I can't stay on `"+g.getName()+"` because you're banned.\nReason: `"+getDatabase().getGuildBanReason(g.getId())+"`");
+                    b.setDescription("I can't stay on `"+g.getName()+"` because you're banned.\nReason: "+getDatabase().getGuildBanReason(g.getId())+"");
                     u.openPrivateChannel().complete().sendMessage(b.build()).queue();
                 } catch (Exception e){
                     log(e.getMessage());

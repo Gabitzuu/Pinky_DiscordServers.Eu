@@ -24,13 +24,16 @@
 
 package com.andrei1058.discordpublicservers.configuration;
 
+import com.andrei1058.discordpublicservers.customisation.Messages;
+import net.dv8tion.jda.core.EmbedBuilder;
+import net.dv8tion.jda.core.entities.Guild;
+import net.dv8tion.jda.core.entities.User;
+
 import java.io.UnsupportedEncodingException;
 import java.sql.*;
 import java.util.Base64;
 
-import static com.andrei1058.discordpublicservers.BOT.getBot;
-import static com.andrei1058.discordpublicservers.BOT.getConfig;
-import static com.andrei1058.discordpublicservers.BOT.log;
+import static com.andrei1058.discordpublicservers.BOT.*;
 
 public class Database {
 
@@ -122,30 +125,58 @@ public class Database {
     public void banUser(long id, String reason){
         if (!isConnected()) connect();
         try {
-            PreparedStatement ps = connection.prepareStatement("INSERT INTO banned_users VALUES(?,?,?);");
+            PreparedStatement ps = connection.prepareStatement("INSERT INTO banned_users VALUES(?,?,?,?);");
             ps.setInt(1, 0);
             ps.setLong(2, id);
-            ps.setString(3, Base64.getEncoder().encode(reason.getBytes("UTF-8")).toString());
+            ps.setTimestamp(3, new Timestamp(System.currentTimeMillis()));
+            ps.setString(4, Base64.getEncoder().encode(reason.getBytes("UTF-8")).toString());
             ps.executeUpdate();
         } catch (SQLException e) {
             log(e.getMessage());
+            e.printStackTrace();
         } catch (UnsupportedEncodingException e) {
             log(e.getMessage());
+            e.printStackTrace();
+        }
+        User u = getBot().getUserById(id);
+        if (u != null){
+            try {
+                EmbedBuilder b = new EmbedBuilder();
+                b.setTitle("DiscordServers.Eu", getConfig().getLogo());
+                b.setThumbnail(getConfig().getLogo());
+                b.setAuthor(getBot().getSelfUser().getName(), "https://discordpublicservers.com", getBot().getSelfUser().getAvatarUrl());
+                b.setDescription("You're now banned from the service.\nReason: "+reason);
+                u.openPrivateChannel().complete().sendMessage(b.build()).queue();
+            } catch (Exception e){
+                log(e.getMessage());
+            }
+            for (Guild g : getBot().getGuilds()){
+                if (g.getOwner().getUser().getIdLong() == id){
+                    Messages.send(g, u, Messages.Message.CANT_SCAN_USER_BANNED);
+                    g.leave();
+                }
+            }
         }
     }
 
     public void banGuild(long id, String reason){
         if (!isConnected()) connect();
         try {
-            PreparedStatement ps = connection.prepareStatement("INSERT INTO banned_servers VALUES(?,?,?);");
+            PreparedStatement ps = connection.prepareStatement("INSERT INTO banned_servers VALUES(?,?,?,?);");
             ps.setInt(1, 0);
             ps.setLong(2, id);
-            ps.setString(3, Base64.getEncoder().encode(reason.getBytes("UTF-8")).toString());
+            ps.setTimestamp(3, new Timestamp(System.currentTimeMillis()));
+            ps.setString(4, Base64.getEncoder().encode(reason.getBytes("UTF-8")).toString());
             ps.executeUpdate();
         } catch (SQLException e) {
             log(e.getMessage());
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
+        }
+        Guild g = getBot().getGuildById(id);
+        if (g != null){
+            Messages.send(g, g.getOwner().getUser(), Messages.Message.CANT_SCAN_GUILD_BANED);
+            g.leave();
         }
     }
 

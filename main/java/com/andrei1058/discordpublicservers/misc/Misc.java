@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package com.andrei1058.discordpublicservers;
+package com.andrei1058.discordpublicservers.misc;
 
 import com.andrei1058.discordpublicservers.customisation.Lang;
 import com.andrei1058.discordpublicservers.customisation.Messages;

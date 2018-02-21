@@ -78,6 +78,8 @@ public class Help extends Command {
                 eb.addField("00setLang", "Set sv languages.", true);
                 eb.addField("00setTags", "Set sv categories.", true);
                 eb.addField("00setDesc", "Set description.", true);
+                eb.addField("00feedback", "Send us a message.", true);
+                eb.addField("00votes", "Check votes amount.", true);
                 eb.setDescription("Bot version: " + BOT.getVersion() + " - " + BOT.getLatUpdate());
                 eb.setColor(getConfig().getColor());
                 eb.setFooter("Server staff commands.", sender.getUser().getAvatarUrl());
@@ -115,7 +117,9 @@ public class Help extends Command {
                         "``00bump`` - Bump this sv. \n" +
                         "``00setLang`` - Set sv languages. \n" +
                         "``00setTags`` -Set sv categories. \n" +
-                        "``00setDesc`` - Set description. \n\n" +
+                        "``00setDesc`` - Set description.\n" +
+                        "``00feedback`` - Send us a message.\n" +
+                        "``00votes`` - Check votes amount.\n\n" +
                         "Bot version: " + BOT.getVersion() + " - " + BOT.getLatUpdate()).queue();
             } else {
                 c.sendMessage("**DiscordServers.Eu**\nServer member commands. \n\n" +

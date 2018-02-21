@@ -25,12 +25,15 @@
 package com.andrei1058.discordpublicservers;
 
 import com.andrei1058.discordpublicservers.commands.*;
+import com.andrei1058.discordpublicservers.commands.member.Vote;
+import com.andrei1058.discordpublicservers.commands.server.*;
 import com.andrei1058.discordpublicservers.configuration.Config;
 import com.andrei1058.discordpublicservers.configuration.Database;
 import com.andrei1058.discordpublicservers.listeners.CollectData;
 import com.andrei1058.discordpublicservers.listeners.Message;
 import com.andrei1058.discordpublicservers.listeners.Ready;
 import com.andrei1058.discordpublicservers.listeners.Shutdown;
+import com.andrei1058.discordpublicservers.misc.Runnable;
 import net.dv8tion.jda.core.AccountType;
 import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.JDABuilder;
@@ -45,7 +48,7 @@ public class BOT {
     private static Config config;
     private static JDA bot;
     private static String version = "1.0beta";
-    private static String latUpdate = "20/02/2018 UTC+2";
+    private static String latUpdate = "21/02/2018 UTC+2";
     private static Database database;
     public static final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 
@@ -68,9 +71,14 @@ public class BOT {
          new Tags("settags");
          new Lang("setlang");
          new Bump("bump");
+         new Vote("vote");
+         new Feedback("feedback");
+         new Votes("votes");
          database = new Database();
 
-         scheduler.schedule(new com.andrei1058.discordpublicservers.Runnable(), 24, TimeUnit.HOURS);
+         scheduler.schedule(new Runnable(), 24, TimeUnit.HOURS);
+
+         //todo check if service owner is friend else add it (send errors and feedback in dm)
      }
 
     public static Config getConfig() {

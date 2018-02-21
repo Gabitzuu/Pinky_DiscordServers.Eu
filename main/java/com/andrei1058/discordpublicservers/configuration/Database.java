@@ -24,8 +24,6 @@
 
 package com.andrei1058.discordpublicservers.configuration;
 
-import sun.misc.BASE64Encoder;
-
 import java.io.UnsupportedEncodingException;
 import java.sql.*;
 import java.util.Base64;
@@ -55,11 +53,12 @@ public class Database {
     private void setupDatabase(){
         if (!isConnected()) connect();
         try {
-            connection.createStatement().executeUpdate("CREATE TABLE IF NOT EXISTS servers (id int not null auto_increment primary key, server_id bigint(200), added_date timestamp, " +
-                    "server_name varchar(200), server_desc varchar(200), on_users int(200), tot_users int(200), bots int(200), last_bump timestamp, last_update timestamp, votes int(200), " +
-                    "premium int(1), owner_id bigint(200), owner_name varchar(200), invite_link varchar(200), server_icon varchar(200), tags varchar(200), langs varchar(200), display int(1));");
-            connection.createStatement().executeUpdate("CREATE TABLE IF NOT EXISTS banned_servers (id int not null auto_increment primary key, server_id bigint(200), date timestamp, reason varchar(200));");
-            connection.createStatement().executeUpdate("CREATE TABLE IF NOT EXISTS banned_users (id int not null auto_increment primary key, user_id bigint(200), date timestamp, reason varchar(200));");
+            connection.createStatement().executeUpdate("CREATE TABLE IF NOT EXISTS servers (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, server_id BIGINT(200), added_date TIMESTAMP, " +
+                    "server_name VARCHAR(200), server_desc VARCHAR(200), on_users INT(200), tot_users INT(200), bots INT(200), last_bump TIMESTAMP, last_update TIMESTAMP, votes INT(200), " +
+                    "premium INT(1), owner_id BIGINT(200), owner_name VARCHAR(200), invite_link VARCHAR(200), server_icon VARCHAR(200), tags VARCHAR(200), langs VARCHAR(200), display INT(1));");
+            connection.createStatement().executeUpdate("CREATE TABLE IF NOT EXISTS banned_servers (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, server_id BIGINT(200), date TIMESTAMP, reason VARCHAR(200));");
+            connection.createStatement().executeUpdate("CREATE TABLE IF NOT EXISTS banned_users (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, user_id BIGINT(200), date TIMESTAMP, reason VARCHAR(200));");
+            connection.createStatement().executeUpdate("CREATE TABLE IF NOT EXISTS feedback (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, user_id BIGINT(200), user_name VARCHAR(200), message VARCHAR(200));");
         } catch (SQLException e) {
            log(e.getMessage());
         }
@@ -192,6 +191,7 @@ public class Database {
             ps.setString(18, langs);
             ps.setInt(19, 1);
             ps.executeUpdate();
+            connection.createStatement().executeUpdate("CREATE TABLE IF NOT EXISTS sv"+server_id+" (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, user_id bigint(200), date timestamp);");
         } catch (SQLException e) {
             log(e.getMessage());
         } catch (UnsupportedEncodingException e) {
@@ -252,6 +252,7 @@ public class Database {
             ps.executeUpdate();
         } catch (SQLException e) {
             log(e.getMessage());
+            e.printStackTrace();
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
         }
@@ -266,6 +267,7 @@ public class Database {
             ps.executeUpdate();
         } catch (SQLException e) {
             log(e.getMessage());
+            e.printStackTrace();
         }
     }
 
@@ -277,6 +279,7 @@ public class Database {
             ps.executeUpdate();
         } catch (SQLException e) {
             log(e.getMessage());
+            e.printStackTrace();
         }
     }
 
@@ -288,6 +291,7 @@ public class Database {
             ps.executeUpdate();
         } catch (SQLException e) {
             log(e.getMessage());
+            e.printStackTrace();
         }
     }
 
@@ -297,6 +301,7 @@ public class Database {
             connection.createStatement().executeUpdate("UPDATE servers SET display='0', WHERE server_id='"+id+"';");
         } catch (SQLException e) {
             log(e.getMessage());
+            e.printStackTrace();
         }
     }
 
@@ -306,6 +311,7 @@ public class Database {
             connection.createStatement().executeUpdate("UPDATE servers SET display='1', WHERE server_id='"+id+"';");
         } catch (SQLException e) {
             log(e.getMessage());
+            e.printStackTrace();
         }
     }
 
@@ -323,6 +329,7 @@ public class Database {
             ps.executeUpdate();
         } catch (SQLException e) {
             log(e.getMessage());
+            e.printStackTrace();
         }
     }
 
@@ -335,6 +342,7 @@ public class Database {
             }
         } catch (SQLException e) {
             log(e.getMessage());
+            e.printStackTrace();
         }
         return null;
     }
@@ -347,6 +355,7 @@ public class Database {
             ps.executeUpdate();
         } catch (SQLException e) {
             log(e.getMessage());
+            e.printStackTrace();
         }
     }
 
@@ -358,6 +367,7 @@ public class Database {
             ps.executeUpdate();
         } catch (SQLException e) {
             log(e.getMessage());
+            e.printStackTrace();
         }
     }
 
@@ -368,6 +378,7 @@ public class Database {
             return rs.next();
         } catch (SQLException e) {
             log(e.getMessage());
+            e.printStackTrace();
             return false;
         }
     }
@@ -382,6 +393,7 @@ public class Database {
             return false;
         } catch (SQLException e) {
             log(e.getMessage());
+            e.printStackTrace();
             return false;
         }
     }
@@ -393,6 +405,79 @@ public class Database {
             connection.createStatement().executeUpdate("UPDATE servers SET id='"+rs.getInt(1)+"', WHERE server_id='"+id+"';");
         } catch (SQLException e) {
             log(e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    public void voteGuild(String string, long user){
+        if (!isConnected()) connect();
+        try {
+            PreparedStatement ps = connection.prepareStatement("INSERT INTO sv"+string+" VALUES (?, ?, ?);");
+            ps.setInt(1, 0);
+            ps.setLong(2, user);
+            ps.setTimestamp(3, new Timestamp(System.currentTimeMillis()));
+            ps.executeUpdate();
+        } catch (Exception e){
+            log(e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    public boolean hasVote(String id, long user){
+        if (!isConnected()) connect();
+        try {
+            ResultSet rs = connection.createStatement().executeQuery("SELECT id FROM sv"+id+" WHERE user_id='"+user+"';");
+            return rs.next();
+        } catch (Exception e){
+            log(e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public Timestamp getVoteDate(String id, long user){
+        if (!isConnected()) connect();
+        try {
+            ResultSet rs = connection.createStatement().executeQuery("SELECT date FROM sv"+id+" WHERE user_id='"+user+"';");
+            if (rs.next()){
+                return rs.getTimestamp(1);
+            }
+        } catch (Exception e){
+            log(e.getMessage());
+            e.printStackTrace();
+        }
+        return new Timestamp(System.currentTimeMillis());
+    }
+
+    public int getVotes(String id){
+        if (!isConnected()) connect();
+        try {
+            ResultSet rs = connection.createStatement().executeQuery("SELECT MAX(id) FROM sv"+id+";");
+            if (rs.next()){
+                return rs.getInt(1);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            log(e.getMessage());
+        }
+        return 1;
+    }
+
+    public void addFeedback(String user_name, long user_id, String message){
+        if (!isConnected()) connect();
+        try {
+            PreparedStatement ps = connection.prepareStatement("INSERT INTO feedback VALUES (?, ?, ?, ?);");
+            ps.setInt(1, 0);
+            ps.setLong(2, user_id);
+            ps.setString(3, user_name);
+            ps.setString(4, Base64.getEncoder().encode(message.getBytes("UTF-8")).toString());
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            log(e.getMessage());
+            e.printStackTrace();
+        } catch (UnsupportedEncodingException e) {
+            log(e.getMessage());
+            e.printStackTrace();
         }
     }
 

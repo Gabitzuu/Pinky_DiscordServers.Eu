@@ -24,7 +24,7 @@
 
 package com.andrei1058.discordpublicservers.listeners;
 
-import com.andrei1058.discordpublicservers.Misc;
+import com.andrei1058.discordpublicservers.misc.Misc;
 import com.andrei1058.discordpublicservers.customisation.Lang;
 import com.andrei1058.discordpublicservers.customisation.Messages;
 import com.andrei1058.discordpublicservers.customisation.Tag;

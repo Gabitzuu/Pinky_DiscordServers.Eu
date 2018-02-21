@@ -22,8 +22,9 @@
  * SOFTWARE.
  */
 
-package com.andrei1058.discordpublicservers.commands;
+package com.andrei1058.discordpublicservers.commands.server;
 
+import com.andrei1058.discordpublicservers.commands.Command;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.Guild;
@@ -56,8 +57,9 @@ public class Bump extends Command {
                     EmbedBuilder eb = new EmbedBuilder();
                     eb.setTitle("Sorry");
                     DateTime date = new DateTime(getDatabase().getLastBump(g.getId()).getTime()).plusDays(1), date2 = new DateTime(System.currentTimeMillis());
+                    int hours = Hours.hoursBetween(date2, date).getHours();
                     eb.setDescription("You can bump a server once a day.\nConsider donating for premium features if you want your server to be on top.\n" +
-                            "Next bump in: "+ Hours.hoursBetween(date2, date).getHours()+" hours");
+                            "Next bump in: "+ (hours == 0 ? 1 : hours)+" hours");
                     eb.setColor(getConfig().getColor());
                     c.sendMessage(eb.build()).queue();
                     return;

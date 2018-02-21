@@ -24,7 +24,7 @@
 
 package com.andrei1058.discordpublicservers.listeners;
 
-import com.andrei1058.discordpublicservers.Misc;
+import com.andrei1058.discordpublicservers.misc.Misc;
 import net.dv8tion.jda.core.entities.Game;
 import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.events.ReadyEvent;

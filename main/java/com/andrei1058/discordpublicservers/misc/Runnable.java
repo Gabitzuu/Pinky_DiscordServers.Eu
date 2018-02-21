@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package com.andrei1058.discordpublicservers;
+package com.andrei1058.discordpublicservers.misc;
 
 public class Runnable implements java.lang.Runnable {
 

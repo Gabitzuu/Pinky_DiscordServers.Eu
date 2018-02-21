@@ -22,8 +22,9 @@
  * SOFTWARE.
  */
 
-package com.andrei1058.discordpublicservers.commands;
+package com.andrei1058.discordpublicservers.commands.server;
 
+import com.andrei1058.discordpublicservers.commands.Command;
 import com.andrei1058.discordpublicservers.customisation.Tag;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.Permission;

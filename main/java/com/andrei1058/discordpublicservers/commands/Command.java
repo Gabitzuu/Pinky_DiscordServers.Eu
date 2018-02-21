@@ -27,6 +27,7 @@ package com.andrei1058.discordpublicservers.commands;
 import net.dv8tion.jda.core.entities.*;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 public abstract class Command {

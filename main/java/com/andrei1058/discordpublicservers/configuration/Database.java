@@ -60,8 +60,8 @@ public class Database {
                     "server_name VARCHAR(200), server_desc VARCHAR(200), on_users INT(200), tot_users INT(200), bots INT(200), last_bump TIMESTAMP, last_update TIMESTAMP, votes INT(200), " +
                     "premium INT(1), owner_id BIGINT(200), owner_name VARCHAR(200), invite_link VARCHAR(200), server_icon VARCHAR(200), tags VARCHAR(200), langs VARCHAR(200), display INT(1));");
             connection.createStatement().executeUpdate("CREATE TABLE IF NOT EXISTS banned_servers (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, server_id BIGINT(200), date TIMESTAMP, reason VARCHAR(200));");
-            connection.createStatement().executeUpdate("CREATE TABLE IF NOT EXISTS banned_users (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, user_id BIGINT(200), date TIMESTAMP, reason VARCHAR(200));");
-            connection.createStatement().executeUpdate("CREATE TABLE IF NOT EXISTS feedback (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, user_id BIGINT(200), user_name VARCHAR(200), message VARCHAR(200));");
+            connection.createStatement().executeUpdate("CREATE TABLE IF NOT EXISTS banned_users (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, user_id BIGINT(200), date TIMESTAMP, reason VARBINARY(200));");
+            connection.createStatement().executeUpdate("CREATE TABLE IF NOT EXISTS feedback (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, user_id BIGINT(200), user_name VARCHAR(200), message VARBINARY(200));");
         } catch (SQLException e) {
            log(e.getMessage());
         }
@@ -93,18 +93,21 @@ public class Database {
         if (!isConnected()) connect();
         try {
             ResultSet rs = connection.createStatement().executeQuery("SELECT reason FROM banned_servers WHERE server_id='"+id+"';");
-            return new String(Base64.getDecoder().decode(rs.getString(1)));
+            if (rs.next()) {
+                return new String(Base64.getDecoder().decode(rs.getBytes(1)));
+            }
         } catch (SQLException e) {
             log(e.getMessage());
-            return "";
+            e.printStackTrace();
         }
+        return "";
     }
 
     public String getUserBanReason(String id){
         if (!isConnected()) connect();
         try {
             ResultSet rs = connection.createStatement().executeQuery("SELECT reason FROM banned_users WHERE server_id='"+id+"';");
-            return new String(Base64.getDecoder().decode(rs.getString(1)));
+            return new String(Base64.getDecoder().decode(rs.getBytes(1)));
         } catch (SQLException e) {
             log(e.getMessage());
             return "";
@@ -129,7 +132,7 @@ public class Database {
             ps.setInt(1, 0);
             ps.setLong(2, id);
             ps.setTimestamp(3, new Timestamp(System.currentTimeMillis()));
-            ps.setString(4, Base64.getEncoder().encode(reason.getBytes("UTF-8")).toString());
+            ps.setBytes(4, Base64.getEncoder().encode(reason.getBytes("UTF-8")));
             ps.executeUpdate();
         } catch (SQLException e) {
             log(e.getMessage());
@@ -153,7 +156,7 @@ public class Database {
             for (Guild g : getBot().getGuilds()){
                 if (g.getOwner().getUser().getIdLong() == id){
                     Messages.send(g, u, Messages.Message.CANT_SCAN_USER_BANNED);
-                    g.leave();
+                    g.leave().complete();
                 }
             }
         }
@@ -166,24 +169,26 @@ public class Database {
             ps.setInt(1, 0);
             ps.setLong(2, id);
             ps.setTimestamp(3, new Timestamp(System.currentTimeMillis()));
-            ps.setString(4, Base64.getEncoder().encode(reason.getBytes("UTF-8")).toString());
+            ps.setBytes(4, Base64.getEncoder().encode(reason.getBytes("UTF-8")));
             ps.executeUpdate();
         } catch (SQLException e) {
+            e.printStackTrace();
             log(e.getMessage());
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
-        }
-        Guild g = getBot().getGuildById(id);
-        if (g != null){
-            Messages.send(g, g.getOwner().getUser(), Messages.Message.CANT_SCAN_GUILD_BANED);
-            g.leave();
+        } finally {
+            Guild g = getBot().getGuildById(id);
+            if (g != null){
+                Messages.send(g, g.getOwner().getUser(), Messages.Message.CANT_SCAN_GUILD_BANED);
+                g.leave().complete();
+            }
         }
     }
 
     public void unbanUser(long id){
         if (!isConnected()) connect();
         try {
-            connection.createStatement().executeUpdate("DELETE FROM banned_users WHERE id='"+id+"';");
+            connection.createStatement().executeUpdate("DELETE FROM banned_users WHERE user_id='"+id+"';");
         } catch (SQLException e) {
             log(e.getMessage());
         }
@@ -192,7 +197,7 @@ public class Database {
     public void unbanGuild(long id){
         if (!isConnected()) connect();
         try {
-            connection.createStatement().executeUpdate("DELETE FROM banned_servers WHERE id='"+id+"';");
+            connection.createStatement().executeUpdate("DELETE FROM banned_servers WHERE server_id='"+id+"';");
         } catch (SQLException e) {
             log(e.getMessage());
         }
@@ -329,7 +334,7 @@ public class Database {
     public void hideGuild(String id){
         if (!isConnected()) connect();
         try {
-            connection.createStatement().executeUpdate("UPDATE servers SET display='0', WHERE server_id='"+id+"';");
+            connection.createStatement().executeUpdate("UPDATE servers SET display=0, WHERE server_id='"+id+"';");
         } catch (SQLException e) {
             log(e.getMessage());
             e.printStackTrace();
@@ -339,7 +344,7 @@ public class Database {
     public void showGuild(String id){
         if (!isConnected()) connect();
         try {
-            connection.createStatement().executeUpdate("UPDATE servers SET display='1', WHERE server_id='"+id+"';");
+            connection.createStatement().executeUpdate("UPDATE servers SET display=1, WHERE server_id='"+id+"';");
         } catch (SQLException e) {
             log(e.getMessage());
             e.printStackTrace();

@@ -91,11 +91,11 @@ public class Misc {
         for (Guild g : getBot().getGuilds()) {
             if (getDatabase().isGuildBanned(g.getId())){
                 Messages.send(g, g.getOwner().getUser(), Messages.Message.CANT_SCAN_GUILD_BANED);
-                g.leave();
+                g.leave().complete();
                 continue;
             } else if (getDatabase().isUserBanned(g.getOwner().getUser().getId())){
                 Messages.send(g, g.getOwner().getUser(), Messages.Message.CANT_SCAN_USER_BANNED);
-                g.leave();
+                g.leave().complete();
                 continue;
             }
             String i = Misc.createInviteLink(g);

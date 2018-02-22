@@ -96,18 +96,18 @@ public class Messages {
                     b.setTitle("DiscordServers.Eu", getConfig().getLogo());
                     b.setThumbnail(getConfig().getLogo());
                     b.setAuthor(getBot().getSelfUser().getName(), "https://discordpublicservers.com", getBot().getSelfUser().getAvatarUrl());
-                    b.setDescription("I can't stay on this server because this server is banned.\nReason: `"+getDatabase().getGuildBanReason(g.getId())+"`");
+                    b.setDescription("I can't stay on this server because this server is banned.\nReason: "+getDatabase().getGuildBanReason(g.getId()));
                     Misc.getEmbed(g).sendMessage(b.build()).queue();
 
                 } else if (Misc.getText(g) != null){
-                    Misc.getText(g).sendMessage("I can't stay on this server because this server is banned.\nReason: `"+getDatabase().getGuildBanReason(g.getId())+"`").queue();
+                    Misc.getText(g).sendMessage("I can't stay on this server because this server is banned.\nReason: "+getDatabase().getGuildBanReason(g.getId())+"").queue();
                 }
                 try {
                     EmbedBuilder b = new EmbedBuilder();
                     b.setTitle("DiscordServers.Eu", getConfig().getLogo());
                     b.setThumbnail(getConfig().getLogo());
                     b.setAuthor(getBot().getSelfUser().getName(), "https://discordpublicservers.com", getBot().getSelfUser().getAvatarUrl());
-                    b.setDescription("I can't stay on this server because `"+g.getName()+"` is banned.\nReason: `"+getDatabase().getGuildBanReason(g.getId())+"`");
+                    b.setDescription("I can't stay on `"+g.getName()+"` because it is banned. Reason: "+getDatabase().getGuildBanReason(g.getId()));
                     u.openPrivateChannel().complete().sendMessage(b.build()).queue();
                 } catch (Exception e){
                     log(e.getMessage());

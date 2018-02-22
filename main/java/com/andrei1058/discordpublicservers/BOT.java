@@ -27,9 +27,7 @@ package com.andrei1058.discordpublicservers;
 import com.andrei1058.discordpublicservers.commands.*;
 import com.andrei1058.discordpublicservers.commands.member.Vote;
 import com.andrei1058.discordpublicservers.commands.server.*;
-import com.andrei1058.discordpublicservers.commands.service.BanUser;
-import com.andrei1058.discordpublicservers.commands.service.Restart;
-import com.andrei1058.discordpublicservers.commands.service.Stop;
+import com.andrei1058.discordpublicservers.commands.service.*;
 import com.andrei1058.discordpublicservers.configuration.Config;
 import com.andrei1058.discordpublicservers.configuration.Database;
 import com.andrei1058.discordpublicservers.listeners.CollectData;
@@ -83,6 +81,9 @@ public class BOT {
          new Stop("stop");
          new Restart("restart");
          new BanUser("banuser");
+         new UnBanUser("unbanuser");
+         new BanServer("banserver");
+         new UnBanServer("unbanserver");
          database = new Database();
 
          scheduler.schedule(runnable, 24, TimeUnit.HOURS);

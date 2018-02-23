@@ -45,7 +45,7 @@ public class BOT {
 
     private static Config config;
     private static JDA bot;
-    private static String version = "1.0";
+    private static String version = "1.1";
     private static String latUpdate = "23/02/2018 UTC+1";
     private static Database database;
     public static final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
@@ -92,13 +92,10 @@ public class BOT {
 
     public static void log(String message){
          System.out.println(message);
+         getBot().getGuildById("310868476958998528").getTextChannelById("318363810367012866").sendMessage(message).queue();
     }
 
     public static GeneralRefresh getRunnable() {
         return runnable;
-    }
-
-    public static ExpireRefresh getExpireRefresh() {
-        return expireRefresh;
     }
 }

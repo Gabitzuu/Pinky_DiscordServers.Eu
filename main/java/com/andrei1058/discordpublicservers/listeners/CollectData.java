@@ -85,6 +85,7 @@ public class CollectData extends ListenerAdapter {
                     invite, e.getGuild().getIconUrl(), Tag.GAMING.toString(), Lang.NONE.toString());
             Messages.send(e.getGuild(), e.getGuild().getOwner().getUser(), Messages.Message.NEW_GUILD_ADDED);
         }
+        Misc.updateStatus();
     }
     /** bot leave*/
     @Override
@@ -94,6 +95,7 @@ public class CollectData extends ListenerAdapter {
                 getDatabase().hideGuild(e.getGuild().getId());
             }
         }
+        Misc.updateStatus();
     }
 
     /** on_users && tot_users */

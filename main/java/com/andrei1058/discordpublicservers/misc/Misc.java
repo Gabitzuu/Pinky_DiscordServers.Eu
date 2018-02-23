@@ -39,10 +39,7 @@ import com.andrei1058.discordpublicservers.listeners.Shutdown;
 import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.OnlineStatus;
 import net.dv8tion.jda.core.Permission;
-import net.dv8tion.jda.core.entities.Guild;
-import net.dv8tion.jda.core.entities.Invite;
-import net.dv8tion.jda.core.entities.TextChannel;
-import net.dv8tion.jda.core.entities.User;
+import net.dv8tion.jda.core.entities.*;
 import net.dv8tion.jda.core.utils.PermissionUtil;
 import org.joda.time.DateTime;
 import org.joda.time.Days;
@@ -121,7 +118,7 @@ public class Misc {
                     if (i2.getInviter() == getBot().getSelfUser()) {
                         if (i2.isTemporary()) {
                             if (PermissionUtil.checkPermission(tc, g.getSelfMember(), Permission.CREATE_INSTANT_INVITE)) {
-                                return g.getDefaultChannel().createInvite().setMaxAge(0).complete().getURL();
+                                return tc.createInvite().setMaxAge(0).complete().getURL();
                             }
                         } else {
                             return i2.getURL();
@@ -137,7 +134,7 @@ public class Misc {
         }
         for (TextChannel tc : g.getTextChannels()) {
             if (PermissionUtil.checkPermission(tc, g.getSelfMember(), Permission.CREATE_INSTANT_INVITE)) {
-                return g.getDefaultChannel().createInvite().setMaxAge(0).complete().getURL();
+                return tc.createInvite().setMaxAge(0).complete().getURL();
             }
         }
         Messages.send(g, g.getOwner().getUser(), Messages.Message.CANT_CREATE_INVITE_LINK);
@@ -261,5 +258,9 @@ public class Misc {
         getBot().addEventListener(new Message());
         getBot().addEventListener(new Shutdown());
         getBot().addEventListener(new CollectData());
+    }
+
+    public static void updateStatus(){
+        getBot().getPresence().setGame(Game.playing(getConfig().getStatusMsg().replace("{servers}", String.valueOf(getBot().getGuilds().size()))));
     }
 }

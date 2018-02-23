@@ -70,7 +70,7 @@ public class Database {
             connection.createStatement().executeUpdate("CREATE TABLE IF NOT EXISTS premium_history (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, server_id BIGINT(200), bought_date TIMESTAMP, duration INT(10));");
             connection.createStatement().executeUpdate("CREATE TABLE IF NOT EXISTS reported_servers (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, server_id BIGINT(200), report_date TIMESTAMP, reason VARBINARY(200), reporter BIGINT(200));");
         } catch (SQLException e) {
-           log(e.getMessage());
+            e.printStackTrace();
         }
     }
 
@@ -236,6 +236,7 @@ public class Database {
             ps.executeUpdate();
             createVoteTable(server_id);
         } catch (SQLException e) {
+            e.printStackTrace();
             log(e.getMessage());
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
@@ -702,8 +703,8 @@ public class Database {
 
     public boolean connect(){
         try {
-            connection = DriverManager.getConnection("jdbc:mysql://"+getConfig().getHost()+":"+getConfig().getPort()+"/"+"discordservers?autoReconnect=true",
-                    getConfig().getUser(), getConfig().getPass());
+            connection = DriverManager.getConnection("jdbc:mysql://"+getConfig().getHost()+":"+getConfig().getPort()+"/"+"discordservers?autoReconnect=true&user="+getConfig().getUser()
+                            +"&password="+getConfig().getPass());
             return true;
         } catch (SQLException e) {
             e.printStackTrace();

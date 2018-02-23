@@ -22,22 +22,23 @@
  * SOFTWARE.
  */
 
-package com.andrei1058.discordpublicservers.commands.server;
+package com.andrei1058.discordpublicservers.commands.service;
 
 import com.andrei1058.discordpublicservers.commands.Command;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.Member;
-import net.dv8tion.jda.core.entities.PrivateChannel;
 import net.dv8tion.jda.core.entities.TextChannel;
 import net.dv8tion.jda.core.utils.PermissionUtil;
 
-import static com.andrei1058.discordpublicservers.BOT.*;
+import static com.andrei1058.discordpublicservers.BOT.getBot;
+import static com.andrei1058.discordpublicservers.BOT.getConfig;
+import static com.andrei1058.discordpublicservers.BOT.getDatabase;
 
-public class Feedback extends Command {
+public class Stats extends Command {
 
-    public Feedback(String name) {
+    public Stats(String name) {
         super(name);
     }
 
@@ -45,40 +46,23 @@ public class Feedback extends Command {
     public void execute(String[] args, TextChannel c, Member sender, Guild g, String s) {
         if (!PermissionUtil.checkPermission(c, g.getSelfMember(), Permission.MESSAGE_WRITE)) /* todo msg can't write on this channel */
             return;
-        if (!sender.hasPermission(Permission.MANAGE_ROLES)) return;
+        if (!sender.getUser().getId().equalsIgnoreCase(getConfig().getOwnerID())) return;
         if (PermissionUtil.checkPermission(c, g.getSelfMember(), Permission.MESSAGE_EMBED_LINKS)) {
             EmbedBuilder eb = new EmbedBuilder();
-            if (s.isEmpty() || args.length < 3) {
-                eb.setTitle("Sorry");
-                eb.setColor(getConfig().getColor());
-                eb.setDescription("Your message is too short!\nExample: 00feedback Keep up the good work!");
-                c.sendMessage(eb.build()).queue();
-                return;
-            }
-            eb.setTitle("Thanks");
             eb.setColor(getConfig().getColor());
-            eb.setDescription("Your feedback was sent!");
+            eb.setTitle("Service statistics");
+            eb.setThumbnail(getConfig().getLogo());
+            eb.addField("Database Servers", String.valueOf(getDatabase().getDatabaseServers()), true);
+            eb.addField("Pinky Servers", String.valueOf(getBot().getGuilds().size()), true);
+            eb.addField("Displayed Servers", String.valueOf(getDatabase().getDisplayedGuilds()), true);
+            eb.addField("Premium Servers", String.valueOf(getDatabase().getPremiumGuilds()), true);
             c.sendMessage(eb.build()).queue();
         } else {
-            if (s.isEmpty() || args.length < 3) {
-                c.sendMessage("Sorry :frowning:\nYour message is too short.\nExample: `00feedback Keep up the good work!`").queue();
-                return;
-            }
-            c.sendMessage("Thanks :smiley:\nYour feedback was sent!").queue();
-        }
-        getDatabase().addFeedback(sender.getUser().getName(), sender.getUser().getIdLong(), s);
-        log("New feedback: "+s);
-        try {
-            PrivateChannel p = getBot().getUserById(getConfig().getOwnerID()).openPrivateChannel().complete();
-            EmbedBuilder eb = new EmbedBuilder();
-            eb.setTitle("Feedback");
-            eb.setColor(getConfig().getColor());
-            eb.setDescription(s);
-            eb.setFooter(sender.getUser().getName()+"#"+sender.getUser().getDiscriminator(), sender.getUser().getAvatarUrl());
-            p.sendMessage(eb.build()).queue();
-        } catch (Exception e){
-            log(e.getMessage());
-            e.printStackTrace();
+            c.sendMessage("**Service statistics**\n" +
+                    "Database Servers: `"+getDatabase().getDatabaseServers()+"`\n" +
+                    "Pinky Servers: `"+getBot().getGuilds().size()+"`\n" +
+                    "Displayed Servers: `"+getDatabase().getDisplayedGuilds()+"`\n" +
+                    "Premium Servers: `"+getDatabase().getPremiumGuilds()+"`\n").queue();
         }
     }
 }

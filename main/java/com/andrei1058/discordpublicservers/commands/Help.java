@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2018 Andrei Dascalu
+ * Copyright (c) 2018 Andrei Dascălu
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,10 +30,9 @@ import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.*;
 import net.dv8tion.jda.core.utils.PermissionUtil;
 
-import java.awt.*;
-
 import static com.andrei1058.discordpublicservers.BOT.getBot;
 import static com.andrei1058.discordpublicservers.BOT.getConfig;
+import static com.andrei1058.discordpublicservers.BOT.getDatabase;
 
 public class Help extends Command {
 
@@ -43,10 +42,9 @@ public class Help extends Command {
 
     @Override
     public void execute(String[] args, TextChannel c, Member sender, Guild g, String string) {
-        if (!PermissionUtil.checkPermission(c, g.getSelfMember(), Permission.MESSAGE_WRITE)) /* todo msg can't write on this channel */ return;
-        /** check if bot can send embed links*/
+        if (!PermissionUtil.checkPermission(c, g.getSelfMember(), Permission.MESSAGE_WRITE)) /* todo msg can't write on this channel */
+            return;
         if (PermissionUtil.checkPermission(c, g.getSelfMember(), Permission.MESSAGE_EMBED_LINKS)) {
-            /** service owner commands*/
             if (sender.getUser().getId().equalsIgnoreCase(getConfig().getOwnerID())) {
                 EmbedBuilder eb = new EmbedBuilder();
                 eb.setTitle("DiscordServers.Eu", getConfig().getLogo());
@@ -61,15 +59,18 @@ public class Help extends Command {
                 eb.addField("00makePremium", "Give premium features.", true);
                 eb.addField("00delPremium", "Del. premium features.", true);
                 eb.addField("00stats", "Service statistics.", true);
-                eb.addField("00removeSv", "Remove a sv.", true);
                 eb.addField("00setStatus", "Change status.", true);
                 eb.setDescription("Bot version: " + BOT.getVersion() + " - " + BOT.getLatUpdate());
                 eb.setColor(getConfig().getColor());
                 eb.setFooter("Service staff commands.", sender.getUser().getAvatarUrl());
+                if (getDatabase().isGuildExists(g.getId())){
+                    if (getDatabase().isPremium(g.getId())){
+                        eb.appendDescription("\nPremium server :star:");
+                    }
+                }
                 c.sendMessage(eb.build()).queue();
             }
-            /** server staff commands*/
-            if (sender.hasPermission(Permission.MANAGE_ROLES)){
+            if (sender.hasPermission(Permission.MANAGE_ROLES)) {
                 EmbedBuilder eb = new EmbedBuilder();
                 eb.setTitle("DiscordServers.Eu", getConfig().getLogo());
                 eb.setThumbnail(getConfig().getLogo());
@@ -81,6 +82,11 @@ public class Help extends Command {
                 eb.addField("00feedback", "Send us a message.", true);
                 eb.addField("00votes", "Check votes amount.", true);
                 eb.setDescription("Bot version: " + BOT.getVersion() + " - " + BOT.getLatUpdate());
+                if (getDatabase().isGuildExists(g.getId())){
+                    if (getDatabase().isPremium(g.getId())){
+                        eb.appendDescription("\nPremium server :star:");
+                    }
+                }
                 eb.setColor(getConfig().getColor());
                 eb.setFooter("Server staff commands.", sender.getUser().getAvatarUrl());
                 c.sendMessage(eb.build()).queue();
@@ -91,11 +97,16 @@ public class Help extends Command {
                 eb.setColor(getConfig().getColor());
                 eb.setDescription("Bot version: " + BOT.getVersion() + " - " + BOT.getLatUpdate());
                 eb.addField("00vote", "Vote this server.", true);
+                eb.addField("00report", "Report this server.", true);
                 eb.setFooter("Server member commands.", sender.getUser().getAvatarUrl());
+                if (getDatabase().isGuildExists(g.getId())){
+                    if (getDatabase().isPremium(g.getId())){
+                        eb.appendDescription("\nPremium server :star:");
+                    }
+                }
                 c.sendMessage(eb.build()).queue();
             }
         } else {
-            /** service owner commands*/
             if (sender.getUser().getId().equalsIgnoreCase(getConfig().getOwnerID())) {
                 c.sendMessage("**DiscordServers.Eu**\nService staff commands. \n\n" +
                         "``00stop`` - Shutdown dps. \n" +
@@ -107,12 +118,10 @@ public class Help extends Command {
                         "``00makePremium`` - Give premium features. \n" +
                         "``00delPremium`` - Delete premium features. \n" +
                         "``00stats`` - Service statistics. \n" +
-                        "``00removeSv`` - Remove a server. \n" +
                         "``00setStatus`` - Change status. \n\n" +
                         "Bot version: " + BOT.getVersion() + " - " + BOT.getLatUpdate()).queue();
             }
-            /** server staff commands */
-            if (sender.hasPermission(Permission.MANAGE_ROLES)){
+            if (sender.hasPermission(Permission.MANAGE_ROLES)) {
                 c.sendMessage("**DiscordServers.Eu**\nServer staff commands. \n\n" +
                         "``00bump`` - Bump this sv. \n" +
                         "``00setLang`` - Set sv languages. \n" +
@@ -123,7 +132,8 @@ public class Help extends Command {
                         "Bot version: " + BOT.getVersion() + " - " + BOT.getLatUpdate()).queue();
             } else {
                 c.sendMessage("**DiscordServers.Eu**\nServer member commands. \n\n" +
-                        "`00vote` - Vote this server.\n"+
+                        "`00vote` - Vote this server.\n" +
+                        "`00report` - Report this server.\n" +
                         "Bot version: " + BOT.getVersion() + " - " + BOT.getLatUpdate()).queue();
             }
         }

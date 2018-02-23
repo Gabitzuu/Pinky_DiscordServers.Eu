@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2018 Andrei Dascalu
+ * Copyright (c) 2018 Andrei Dascălu
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,16 +25,23 @@
 package com.andrei1058.discordpublicservers.customisation;
 
 import com.andrei1058.discordpublicservers.misc.Misc;
+import com.sun.org.apache.bcel.internal.generic.BREAKPOINT;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.User;
+import org.joda.time.DateTime;
+import org.joda.time.Days;
+import org.joda.time.Interval;
+
+import java.text.SimpleDateFormat;
+import java.time.format.DateTimeFormatter;
 
 import static com.andrei1058.discordpublicservers.BOT.*;
 
 public class Messages {
 
     public enum Message {
-        NEW_GUILD_ADDED, GUILD_RE_ADDED, CANT_SCAN_GUILD_BANED, CANT_SCAN_USER_BANNED, CANT_CREATE_INVITE_LINK
+        NEW_GUILD_ADDED, GUILD_RE_ADDED, CANT_SCAN_GUILD_BANED, CANT_SCAN_USER_BANNED, CANT_CREATE_INVITE_LINK, BOUGHT_PREMIUM, PREMIUM_EXPIRE_SOON, PREMIUM_EXPIRED
     }
 
     public static void send(Guild g, User u, Message m){
@@ -160,6 +167,85 @@ public class Messages {
                     u.openPrivateChannel().complete().sendMessage(b.build()).queue();
                 } catch (Exception e){
                     log(e.getMessage());
+                    e.printStackTrace();
+                }
+                break;
+            case BOUGHT_PREMIUM:
+                DateTime d = new DateTime(getDatabase().getPremiumExpire(g.getId()).getTime());
+                if (Misc.getEmbed(g) != null){
+                    EmbedBuilder b = new EmbedBuilder();
+                    b.setColor(getConfig().getColor());
+                    b.setTitle("DiscordServers.Eu", getConfig().getLogo());
+                    b.setThumbnail(getConfig().getLogo());
+                    b.setAuthor(getBot().getSelfUser().getName(), "https://discordpublicservers.com", getBot().getSelfUser().getAvatarUrl());
+                    b.setDescription("Thanks for donating for premium :heart:\nIt will expire on "+d.monthOfYear().getAsShortText()+" "+d.dayOfMonth().get()+" "+d.year().get()+" at "+d.hourOfDay().get()+" o'clock.");
+                    Misc.getEmbed(g).sendMessage(b.build()).queue();
+                } else if (Misc.getText(g) != null){
+                    Misc.getText(g).sendMessage("Thanks for donating for premium :heart:\nIt will expire on "+d.monthOfYear().getAsShortText()+" "+d.dayOfMonth().get()+" "+d.year().get()+" at "+d.hourOfDay().get()+" o'clock.").queue();
+                }
+                try {
+                    EmbedBuilder b = new EmbedBuilder();
+                    b.setColor(getConfig().getColor());
+                    b.setTitle("DiscordServers.Eu", getConfig().getLogo());
+                    b.setThumbnail(getConfig().getLogo());
+                    b.setAuthor(getBot().getSelfUser().getName(), "https://discordpublicservers.com", getBot().getSelfUser().getAvatarUrl());
+                    b.setDescription("Thanks for donating for premium :heart:\nPremium for "+g.getName()+" will expire on "+d.monthOfYear().getAsShortText()+" "+d.dayOfMonth().get()+" "+d.year().get()+" at "+d.hourOfDay().get()+" o'clock.");
+                    u.openPrivateChannel().complete().sendMessage(b.build()).queue();
+                } catch (Exception e){
+                    log(e.getMessage());
+                    e.printStackTrace();
+                }
+                break;
+            case PREMIUM_EXPIRE_SOON:
+                DateTime expire = new DateTime(getDatabase().getPremiumExpire(g.getId()).getTime());
+                int days = Days.daysBetween(new DateTime(System.currentTimeMillis()), expire).getDays();
+                if (Misc.getEmbed(g) != null){
+                    EmbedBuilder b = new EmbedBuilder();
+                    b.setColor(getConfig().getColor());
+                    b.setTitle("DiscordServers.Eu", getConfig().getLogo());
+                    b.setThumbnail(getConfig().getLogo());
+                    b.setAuthor(getBot().getSelfUser().getName(), "https://discordpublicservers.com", getBot().getSelfUser().getAvatarUrl());
+                    b.setDescription("Premium will expire in "+days+" days!\nPlease consider donating again :slight_slime:");
+                    Misc.getEmbed(g).sendMessage(b.build()).queue();
+                } else if (Misc.getText(g) != null){
+                    Misc.getText(g).sendMessage("Premium will expire in "+days+" days!\nPlease consider donating again :slight_slime:").queue();
+                }
+                try {
+                    EmbedBuilder b = new EmbedBuilder();
+                    b.setColor(getConfig().getColor());
+                    b.setTitle("DiscordServers.Eu", getConfig().getLogo());
+                    b.setThumbnail(getConfig().getLogo());
+                    b.setAuthor(getBot().getSelfUser().getName(), "https://discordpublicservers.com", getBot().getSelfUser().getAvatarUrl());
+                    b.setDescription("Premium for "+g.getName()+" will expire in "+days+"\nPlease consider donating again :slight_slime:");
+                    u.openPrivateChannel().complete().sendMessage(b.build()).queue();
+                } catch (Exception e){
+                    log(e.getMessage());
+                    e.printStackTrace();
+                }
+                break;
+            case PREMIUM_EXPIRED:
+                if (Misc.getEmbed(g) != null){
+                    EmbedBuilder b = new EmbedBuilder();
+                    b.setColor(getConfig().getColor());
+                    b.setTitle("DiscordServers.Eu", getConfig().getLogo());
+                    b.setThumbnail(getConfig().getLogo());
+                    b.setAuthor(getBot().getSelfUser().getName(), "https://discordpublicservers.com", getBot().getSelfUser().getAvatarUrl());
+                    b.setDescription("Premium features have expired :frowning:");
+                    Misc.getEmbed(g).sendMessage(b.build()).queue();
+                } else if (Misc.getText(g) != null){
+                    Misc.getText(g).sendMessage("Premium features have expired :frowning:\nPlease consider donating again :slight_slime:").queue();
+                }
+                try {
+                    EmbedBuilder b = new EmbedBuilder();
+                    b.setColor(getConfig().getColor());
+                    b.setTitle("DiscordServers.Eu", getConfig().getLogo());
+                    b.setThumbnail(getConfig().getLogo());
+                    b.setAuthor(getBot().getSelfUser().getName(), "https://discordpublicservers.com", getBot().getSelfUser().getAvatarUrl());
+                    b.setDescription("Premium features for "+g.getName()+" have expired\nPlease consider donating again :slight_slime:");
+                    u.openPrivateChannel().complete().sendMessage(b.build()).queue();
+                } catch (Exception e){
+                    log(e.getMessage());
+                    e.printStackTrace();
                 }
                 break;
         }

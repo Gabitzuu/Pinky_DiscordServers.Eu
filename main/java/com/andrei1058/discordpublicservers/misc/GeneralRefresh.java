@@ -22,31 +22,19 @@
  * SOFTWARE.
  */
 
-package com.andrei1058.discordpublicservers.commands;
+package com.andrei1058.discordpublicservers.misc;
 
-import net.dv8tion.jda.core.entities.*;
+import static com.andrei1058.discordpublicservers.misc.Misc.checkPremiumExpire;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+public class GeneralRefresh implements java.lang.Runnable {
 
-public abstract class Command {
-
-    private static List<Command> commandList = new ArrayList<>();
-    private String name;
-
-    public Command(String name){
-        this.name = name;
-        commandList.add(this);
+    @Override
+    public void run() {
+        Misc.guildsRefresh();
+        checkPremiumExpire();
     }
 
-    public abstract void execute(String[] args, TextChannel c, Member sender, Guild g, String s);
-
-    public String getName() {
-        return name;
-    }
-
-    public static List<Command> getCommandList() {
-        return commandList;
+    public void stop(){
+        Thread.currentThread().interrupt();
     }
 }

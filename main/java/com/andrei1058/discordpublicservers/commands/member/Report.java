@@ -22,22 +22,23 @@
  * SOFTWARE.
  */
 
-package com.andrei1058.discordpublicservers.commands.server;
+package com.andrei1058.discordpublicservers.commands.member;
 
 import com.andrei1058.discordpublicservers.commands.Command;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.Member;
-import net.dv8tion.jda.core.entities.PrivateChannel;
 import net.dv8tion.jda.core.entities.TextChannel;
 import net.dv8tion.jda.core.utils.PermissionUtil;
 
-import static com.andrei1058.discordpublicservers.BOT.*;
+import static com.andrei1058.discordpublicservers.BOT.getConfig;
+import static com.andrei1058.discordpublicservers.BOT.getDatabase;
+import static com.andrei1058.discordpublicservers.BOT.log;
 
-public class Feedback extends Command {
+public class Report extends Command {
 
-    public Feedback(String name) {
+    public Report(String name) {
         super(name);
     }
 
@@ -45,40 +46,32 @@ public class Feedback extends Command {
     public void execute(String[] args, TextChannel c, Member sender, Guild g, String s) {
         if (!PermissionUtil.checkPermission(c, g.getSelfMember(), Permission.MESSAGE_WRITE)) /* todo msg can't write on this channel */
             return;
-        if (!sender.hasPermission(Permission.MANAGE_ROLES)) return;
+        if (!getDatabase().isGuildExists(g.getId())) return;
         if (PermissionUtil.checkPermission(c, g.getSelfMember(), Permission.MESSAGE_EMBED_LINKS)) {
-            EmbedBuilder eb = new EmbedBuilder();
-            if (s.isEmpty() || args.length < 3) {
-                eb.setTitle("Sorry");
-                eb.setColor(getConfig().getColor());
-                eb.setDescription("Your message is too short!\nExample: 00feedback Keep up the good work!");
-                c.sendMessage(eb.build()).queue();
+            EmbedBuilder e = new EmbedBuilder();
+            e.setColor(getConfig().getColor());
+            if (s.isEmpty()){
+                e.setTitle("Error");
+                e.setDescription("Please write a reason.\nUsage: 00report reason");
+                c.sendMessage(e.build()).queue();
                 return;
             }
-            eb.setTitle("Thanks");
-            eb.setColor(getConfig().getColor());
-            eb.setDescription("Your feedback was sent!");
-            c.sendMessage(eb.build()).queue();
+            if (args.length < 5){
+                e.setTitle("Error");
+                e.setDescription("Please write a good reason.");
+                c.sendMessage(e.build()).queue();
+                return;
+            }
+            getDatabase().addReport(g.getIdLong(), s, sender.getUser().getIdLong());
+            e.setTitle("Done");
+            e.setDescription("Report sent!\nWe'll check if this server doesn't respect our tos.");
+            c.sendMessage(e.build()).queue();
+            log("New server report: "+g.getId()+" - "+s);
         } else {
-            if (s.isEmpty() || args.length < 3) {
-                c.sendMessage("Sorry :frowning:\nYour message is too short.\nExample: `00feedback Keep up the good work!`").queue();
+            if (s.isEmpty()){
+                c.sendMessage("Please write a reason.").queue();
                 return;
             }
-            c.sendMessage("Thanks :smiley:\nYour feedback was sent!").queue();
-        }
-        getDatabase().addFeedback(sender.getUser().getName(), sender.getUser().getIdLong(), s);
-        log("New feedback: "+s);
-        try {
-            PrivateChannel p = getBot().getUserById(getConfig().getOwnerID()).openPrivateChannel().complete();
-            EmbedBuilder eb = new EmbedBuilder();
-            eb.setTitle("Feedback");
-            eb.setColor(getConfig().getColor());
-            eb.setDescription(s);
-            eb.setFooter(sender.getUser().getName()+"#"+sender.getUser().getDiscriminator(), sender.getUser().getAvatarUrl());
-            p.sendMessage(eb.build()).queue();
-        } catch (Exception e){
-            log(e.getMessage());
-            e.printStackTrace();
         }
     }
 }

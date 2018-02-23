@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2018 Andrei Dascalu
+ * Copyright (c) 2018 Andrei Dascălu
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,22 +24,79 @@
 
 package com.andrei1058.discordpublicservers.misc;
 
+import com.andrei1058.discordpublicservers.commands.Help;
+import com.andrei1058.discordpublicservers.commands.member.Report;
+import com.andrei1058.discordpublicservers.commands.member.Vote;
+import com.andrei1058.discordpublicservers.commands.server.*;
+import com.andrei1058.discordpublicservers.commands.service.*;
 import com.andrei1058.discordpublicservers.customisation.Lang;
 import com.andrei1058.discordpublicservers.customisation.Messages;
 import com.andrei1058.discordpublicservers.customisation.Tag;
+import com.andrei1058.discordpublicservers.listeners.CollectData;
+import com.andrei1058.discordpublicservers.listeners.Message;
+import com.andrei1058.discordpublicservers.listeners.Ready;
+import com.andrei1058.discordpublicservers.listeners.Shutdown;
+import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.OnlineStatus;
 import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.Invite;
 import net.dv8tion.jda.core.entities.TextChannel;
+import net.dv8tion.jda.core.entities.User;
 import net.dv8tion.jda.core.utils.PermissionUtil;
+import org.joda.time.DateTime;
+import org.joda.time.Days;
+import org.joda.time.Hours;
+import org.joda.time.Interval;
 
 import java.io.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 
 import static com.andrei1058.discordpublicservers.BOT.getBot;
+import static com.andrei1058.discordpublicservers.BOT.getConfig;
 import static com.andrei1058.discordpublicservers.BOT.getDatabase;
 
 public class Misc {
+
+    private static List<Long> announce = new ArrayList<>();
+
+    public static void checkPremiumExpire(){
+        for (Long l : getDatabase().getPremiumServers()){
+            DateTime d1 = new DateTime(System.currentTimeMillis()), d2 = new DateTime(getDatabase().getPremiumExpire(String.valueOf(l)).getTime());
+            int d = Days.daysBetween(d1, d2).getDays();
+            if (d == 7 || d == 3 || d == 1){
+                if (!announce.contains(l)){
+                    announce.add(l);
+                    Guild g = getBot().getGuildById(l);
+                    if (g != null) {
+                        Messages.send(g, g.getOwner().getUser(), Messages.Message.PREMIUM_EXPIRE_SOON);
+                    }
+                }
+            } else {
+                if (announce.contains(l)){
+                    announce.remove(l);
+                }
+            }
+            if (d == 0){
+                int h = Hours.hoursBetween(d1, d2).getHours();
+                if (h <= 0){
+                    Guild g = getBot().getGuildById(l);
+                    if (g != null) {
+                        Messages.send(g, g.getOwner().getUser(), Messages.Message.PREMIUM_EXPIRED);
+                    }
+                    getDatabase().removePremium(String.valueOf(l));
+                }
+            } else if (d < 0){
+                Guild g = getBot().getGuildById(l);
+                if (g != null) {
+                    Messages.send(g, g.getOwner().getUser(), Messages.Message.PREMIUM_EXPIRED);
+                }
+                getDatabase().removePremium(String.valueOf(l));
+            }
+        }
+    }
 
     public static String createInviteLink(Guild g) {
         String i = "";
@@ -87,7 +144,7 @@ public class Misc {
         return i;
     }
 
-    public static void startUpRefresh() {
+    public static void guildsRefresh() {
         for (Guild g : getBot().getGuilds()) {
             if (getDatabase().isGuildBanned(g.getId())){
                 Messages.send(g, g.getOwner().getUser(), Messages.Message.CANT_SCAN_GUILD_BANED);
@@ -139,7 +196,7 @@ public class Misc {
     }
 
     public static void createStartScript(){
-        File f = new File("start.bat");
+        File f = new File("start.sh");
         if (!f.exists()){
             try {
                 f.createNewFile();
@@ -147,7 +204,7 @@ public class Misc {
                 e.printStackTrace();
             } finally {
                 try {
-                    PrintWriter pw = new PrintWriter("start.bat", "UTF-8");
+                    PrintWriter pw = new PrintWriter("start.sh", "UTF-8");
                     pw.println("java -jar discordpublicservers-1.0-SNAPSHOT-jar-with-dependencies.jar");
                     pw.close();
                 } catch (FileNotFoundException e) {
@@ -159,4 +216,50 @@ public class Misc {
         }
     }
 
+    public static boolean isLong(String s){
+        try {
+            Long.parseLong(s);
+        } catch (Exception ex){
+            return false;
+        }
+        return true;
+    }
+
+    public static boolean isInt(String s){
+        try {
+            Integer.parseInt(s);
+        } catch (Exception ex){
+            return false;
+        }
+        return true;
+    }
+
+    public static void registerCommands(){
+        new Help("help");
+        new Description("setdesc");
+        new Tags("settags");
+        new com.andrei1058.discordpublicservers.commands.server.Lang("setlang");
+        new Bump("bump");
+        new Vote("vote");
+        new Feedback("feedback");
+        new Votes("votes");
+        new Stop("stop");
+        new Restart("restart");
+        new BanUser("banuser");
+        new UnBanUser("unbanuser");
+        new BanServer("banserver");
+        new UnBanServer("unbanserver");
+        new MakePremium("makepremium");
+        new DelPremium("delpremium");
+        new Stats("stats");
+        new SetStatus("setstatus");
+        new Report("report");
+    }
+
+    public static void registerEvents(){
+        getBot().addEventListener(new Ready());
+        getBot().addEventListener(new Message());
+        getBot().addEventListener(new Shutdown());
+        getBot().addEventListener(new CollectData());
+    }
 }

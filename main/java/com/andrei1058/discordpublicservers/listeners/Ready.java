@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2018 Andrei Dascalu
+ * Copyright (c) 2018 Andrei Dascălu
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,6 +25,7 @@
 package com.andrei1058.discordpublicservers.listeners;
 
 import com.andrei1058.discordpublicservers.misc.Misc;
+import net.dv8tion.jda.client.events.relationship.FriendRequestReceivedEvent;
 import net.dv8tion.jda.core.entities.Game;
 import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.events.ReadyEvent;
@@ -56,6 +57,15 @@ public class Ready extends ListenerAdapter {
                 break;
         }
         getBot().getPresence().setStatus(getConfig().getStatus());
-        Misc.startUpRefresh();
+        Misc.guildsRefresh();
+        Misc.checkPremiumExpire();
+    }
+
+    @Override
+    public void onFriendRequestReceived(FriendRequestReceivedEvent e){
+        if (e.getUser().getId().equalsIgnoreCase(getConfig().getOwnerID())){
+            e.getFriendRequest().accept();
+            e.getUser().openPrivateChannel().complete().sendMessage("Hello daddy :heart:").queue();
+        }
     }
 }

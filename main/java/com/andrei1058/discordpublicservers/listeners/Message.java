@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2018 Andrei Dascalu
+ * Copyright (c) 2018 Andrei Dascălu
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,12 +33,12 @@ public class Message extends ListenerAdapter {
 
     @Override
     public void onMessageReceived(MessageReceivedEvent e){
-        /** private channel commands */
+        /* private channel commands */
         if (e.getChannel().getType() == ChannelType.PRIVATE){
 
             return;
         }
-        /** guild channel commands */
+        /* guild channel commands */
         if (e.getMessage().getContentRaw().startsWith("00")){
             String var = e.getMessage().getContentRaw().substring(2, e.getMessage().getContentRaw().length());
             if (!var.isEmpty()){

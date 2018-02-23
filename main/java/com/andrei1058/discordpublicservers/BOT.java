@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2018 Andrei Dascalu
+ * Copyright (c) 2018 Andrei Dascălu
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,17 +24,10 @@
 
 package com.andrei1058.discordpublicservers;
 
-import com.andrei1058.discordpublicservers.commands.*;
-import com.andrei1058.discordpublicservers.commands.member.Vote;
-import com.andrei1058.discordpublicservers.commands.server.*;
-import com.andrei1058.discordpublicservers.commands.service.*;
 import com.andrei1058.discordpublicservers.configuration.Config;
 import com.andrei1058.discordpublicservers.configuration.Database;
-import com.andrei1058.discordpublicservers.listeners.CollectData;
-import com.andrei1058.discordpublicservers.listeners.Message;
-import com.andrei1058.discordpublicservers.listeners.Ready;
-import com.andrei1058.discordpublicservers.listeners.Shutdown;
-import com.andrei1058.discordpublicservers.misc.Runnable;
+import com.andrei1058.discordpublicservers.misc.ExpireRefresh;
+import com.andrei1058.discordpublicservers.misc.GeneralRefresh;
 import net.dv8tion.jda.core.AccountType;
 import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.JDABuilder;
@@ -45,16 +38,19 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import static com.andrei1058.discordpublicservers.misc.Misc.createStartScript;
+import static com.andrei1058.discordpublicservers.misc.Misc.registerCommands;
+import static com.andrei1058.discordpublicservers.misc.Misc.registerEvents;
 
 public class BOT {
 
     private static Config config;
     private static JDA bot;
-    private static String version = "1.0beta";
-    private static String latUpdate = "21/02/2018 UTC+2";
+    private static String version = "1.0";
+    private static String latUpdate = "23/02/2018 UTC+1";
     private static Database database;
     public static final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
-    private static Runnable runnable = new Runnable();
+    private static GeneralRefresh runnable = new GeneralRefresh();
+    private static ExpireRefresh expireRefresh = new ExpireRefresh();
 
 
      public static void main(String[] args){
@@ -65,32 +61,13 @@ public class BOT {
              e.printStackTrace();
              return;
          }
-         getBot().addEventListener(new Ready());
-         getBot().addEventListener(new Message());
-         getBot().addEventListener(new Shutdown());
-         getBot().addEventListener(new CollectData());
+         registerEvents();
          getBot().setAutoReconnect(true);
-         new Help("help");
-         new Description("setdesc");
-         new Tags("settags");
-         new Lang("setlang");
-         new Bump("bump");
-         new Vote("vote");
-         new Feedback("feedback");
-         new Votes("votes");
-         new Stop("stop");
-         new Restart("restart");
-         new BanUser("banuser");
-         new UnBanUser("unbanuser");
-         new BanServer("banserver");
-         new UnBanServer("unbanserver");
+         registerCommands();
          database = new Database();
-
          scheduler.schedule(runnable, 24, TimeUnit.HOURS);
-
+         scheduler.schedule(expireRefresh, 1, TimeUnit.HOURS);
          createStartScript();
-
-         //todo check if service owner is friend else add it (send errors and feedback in dm)
      }
 
     public static Config getConfig() {
@@ -117,7 +94,11 @@ public class BOT {
          System.out.println(message);
     }
 
-    public static Runnable getRunnable() {
+    public static GeneralRefresh getRunnable() {
         return runnable;
+    }
+
+    public static ExpireRefresh getExpireRefresh() {
+        return expireRefresh;
     }
 }

@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2018 Andrei Dascalu
+ * Copyright (c) 2018 Andrei Dascălu
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,14 +24,11 @@
 
 package com.andrei1058.discordpublicservers.misc;
 
-public class Runnable implements java.lang.Runnable {
+public class ExpireRefresh implements Runnable {
 
     @Override
     public void run() {
-        Misc.startUpRefresh();
+        Misc.checkPremiumExpire();
     }
 
-    public void stop(){
-        Thread.currentThread().interrupt();
-    }
 }

@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2018 Andrei Dascalu
+ * Copyright (c) 2018 Andrei Dascălu
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,9 +32,9 @@ import java.util.Properties;
 
 public class Config {
 
-    Properties properties;
-    OutputStream out;
-    InputStream in;
+    private Properties properties;
+    private OutputStream out;
+    private InputStream in;
 
     private String token, host, port, user, pass, statusType, statusMsg, streamLink, ownerID;
     private String logo = "https://discordpublicservers.com/inc/logo.png", serviceLink = "https://discordpublicservers.com",
@@ -143,6 +143,12 @@ public class Config {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public void saveStatus(String message){
+        openOut();
+        properties.setProperty("status-msg", message);
+        closeOut();
     }
 
 

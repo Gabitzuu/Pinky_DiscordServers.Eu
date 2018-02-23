@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2018 Andrei Dascalu
+ * Copyright (c) 2018 Andrei Dascălu
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,10 +28,13 @@ import com.andrei1058.discordpublicservers.customisation.Messages;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.User;
+import org.joda.time.DateTime;
 
 import java.io.UnsupportedEncodingException;
 import java.sql.*;
+import java.util.ArrayList;
 import java.util.Base64;
+import java.util.List;
 
 import static com.andrei1058.discordpublicservers.BOT.*;
 
@@ -48,6 +51,7 @@ public class Database {
         if (!connect()){
            log("Can't connect to database!");
            getBot().shutdownNow();
+           System.exit(1);
            return;
         }
         setupDatabase();
@@ -62,6 +66,9 @@ public class Database {
             connection.createStatement().executeUpdate("CREATE TABLE IF NOT EXISTS banned_servers (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, server_id BIGINT(200), date TIMESTAMP, reason VARCHAR(200));");
             connection.createStatement().executeUpdate("CREATE TABLE IF NOT EXISTS banned_users (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, user_id BIGINT(200), date TIMESTAMP, reason VARBINARY(200));");
             connection.createStatement().executeUpdate("CREATE TABLE IF NOT EXISTS feedback (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, user_id BIGINT(200), user_name VARCHAR(200), message VARBINARY(200));");
+            connection.createStatement().executeUpdate("CREATE TABLE IF NOT EXISTS premium_servers (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, server_id BIGINT(200), bought_date TIMESTAMP, expire_date TIMESTAMP);");
+            connection.createStatement().executeUpdate("CREATE TABLE IF NOT EXISTS premium_history (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, server_id BIGINT(200), bought_date TIMESTAMP, duration INT(10));");
+            connection.createStatement().executeUpdate("CREATE TABLE IF NOT EXISTS reported_servers (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, server_id BIGINT(200), report_date TIMESTAMP, reason VARBINARY(200), reporter BIGINT(200));");
         } catch (SQLException e) {
            log(e.getMessage());
         }
@@ -227,11 +234,21 @@ public class Database {
             ps.setString(18, langs);
             ps.setInt(19, 1);
             ps.executeUpdate();
-            connection.createStatement().executeUpdate("CREATE TABLE IF NOT EXISTS sv"+server_id+" (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, user_id bigint(200), date timestamp);");
+            createVoteTable(server_id);
         } catch (SQLException e) {
             log(e.getMessage());
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
+        }
+    }
+
+    private void createVoteTable(long id){
+        if (!isConnected()) connect();
+        try {
+            connection.createStatement().executeUpdate("CREATE TABLE IF NOT EXISTS votes_"+id+" (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, user_id bigint(200), date timestamp);");
+        } catch (Exception e){
+            e.printStackTrace();
+            log(e.getMessage());
         }
     }
 
@@ -434,6 +451,16 @@ public class Database {
         }
     }
 
+    private void setPremium(String id){
+        if (!isConnected()) connect();
+        try {
+            connection.createStatement().executeUpdate("UPDATE servers SET premium=1 WHERE server_id='"+id+"';");
+        } catch (SQLException e) {
+            log(e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
     public void bumpGuild(String id){
         if (!isConnected()) connect();
         try {
@@ -448,21 +475,25 @@ public class Database {
     public void voteGuild(String string, long user){
         if (!isConnected()) connect();
         try {
-            PreparedStatement ps = connection.prepareStatement("INSERT INTO sv"+string+" VALUES (?, ?, ?);");
+            PreparedStatement ps = connection.prepareStatement("INSERT INTO votes_"+string+" VALUES (?, ?, ?);");
             ps.setInt(1, 0);
             ps.setLong(2, user);
             ps.setTimestamp(3, new Timestamp(System.currentTimeMillis()));
             ps.executeUpdate();
         } catch (Exception e){
-            log(e.getMessage());
-            e.printStackTrace();
+            if (e.getMessage().contains("votes_")){
+                createVoteTable(Long.valueOf(string));
+            } else {
+                log(e.getMessage());
+                e.printStackTrace();
+            }
         }
     }
 
     public boolean hasVote(String id, long user){
         if (!isConnected()) connect();
         try {
-            ResultSet rs = connection.createStatement().executeQuery("SELECT id FROM sv"+id+" WHERE user_id='"+user+"';");
+            ResultSet rs = connection.createStatement().executeQuery("SELECT id FROM votes_"+id+" WHERE user_id='"+user+"';");
             return rs.next();
         } catch (Exception e){
             log(e.getMessage());
@@ -474,7 +505,7 @@ public class Database {
     public Timestamp getVoteDate(String id, long user){
         if (!isConnected()) connect();
         try {
-            ResultSet rs = connection.createStatement().executeQuery("SELECT date FROM sv"+id+" WHERE user_id='"+user+"';");
+            ResultSet rs = connection.createStatement().executeQuery("SELECT date FROM votes_"+id+" WHERE user_id='"+user+"';");
             if (rs.next()){
                 return rs.getTimestamp(1);
             }
@@ -488,7 +519,7 @@ public class Database {
     public int getVotes(String id){
         if (!isConnected()) connect();
         try {
-            ResultSet rs = connection.createStatement().executeQuery("SELECT MAX(id) FROM sv"+id+";");
+            ResultSet rs = connection.createStatement().executeQuery("SELECT MAX(id) FROM votes_"+id+";");
             if (rs.next()){
                 return rs.getInt(1);
             }
@@ -517,6 +548,158 @@ public class Database {
         }
     }
 
+    public void addPremiumGuild(long id, int duration){
+        if (!isConnected()) connect();
+        try {
+            ResultSet rs = connection.createStatement().executeQuery("SELECT id FROM premium_servers WHERE server_id='"+id+"';");
+            if (rs.next()){
+                PreparedStatement ps = connection.prepareStatement("UPDATE premium_servers SET bought_date=?, expire_date=? WHERE server_id='"+id+"';");
+                Timestamp b = new Timestamp(System.currentTimeMillis());
+                ps.setTimestamp(1, b);
+                DateTime d = new DateTime(System.currentTimeMillis()).plusDays(duration).toDateTime();
+                b = new Timestamp(d.getMillis());
+                ps.setTimestamp(2, b);
+                ps.executeUpdate();
+            } else {
+                PreparedStatement ps = connection.prepareStatement("INSERT INTO premium_servers VALUES (?, ?, ?, ?);");
+                ps.setInt(1, 0);
+                ps.setLong(2, id);
+                Timestamp b = new Timestamp(System.currentTimeMillis());
+                ps.setTimestamp(3, b);
+                DateTime d = new DateTime(System.currentTimeMillis()).plusDays(duration).toDateTime();
+                b = new Timestamp(d.getMillis());
+                ps.setTimestamp(4, b);
+                ps.executeUpdate();
+            }
+            addPremiumHistory(id, duration);
+            setPremium(String.valueOf(id));
+        } catch (SQLException e) {
+            log(e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    private void addPremiumHistory(long id, int duration){
+        if (!isConnected()) connect();
+        try {
+            PreparedStatement ps = connection.prepareStatement("INSERT INTO premium_history VALUES (?, ?, ?, ?);");
+            ps.setInt(1, 0);
+            ps.setLong(2, id);
+            ps.setTimestamp(3, new Timestamp(System.currentTimeMillis()));
+            ps.setInt(4, duration);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            log(e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    public Timestamp getPremiumExpire(String id){
+        if (!isConnected()) connect();
+        try {
+            ResultSet rs = connection.createStatement().executeQuery("SELECT expire_date FROM premium_servers WHERE server_id='"+id+"';");
+            if (rs.next()){
+                return rs.getTimestamp(1);
+            }
+        } catch (SQLException e) {
+            log(e.getMessage());
+            e.printStackTrace();
+        }
+        return new Timestamp(0);
+    }
+
+    public void removePremium(String id){
+        if (!isConnected()) connect();
+        try {
+            connection.createStatement().executeUpdate("DELETE FROM premium_servers WHERE server_id='"+id+"';");
+            connection.createStatement().executeUpdate("UPDATE servers SET premium=0 WHERE server_id='"+id+"';");
+        } catch (Exception e){
+            e.printStackTrace();
+            log(e.getMessage());
+        }
+    }
+
+    public int getDatabaseServers(){
+        if (!isConnected()) connect();
+        try {
+            ResultSet rs = connection.createStatement().executeQuery("SELECT MAX(id) FROM servers;");
+            if (rs.next()){
+                return rs.getInt(1);
+            }
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+        return 0;
+    }
+
+    public int getDisplayedGuilds(){
+        int x = 0;
+        if (!isConnected()) connect();
+        try {
+            ResultSet rs = connection.createStatement().executeQuery("SELECT id FROM servers WHERE display=1;");
+            if (rs.next()){
+                while (rs.next()){
+                    x++;
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            log(e.getMessage());
+        }
+        return x;
+    }
+
+    public int getPremiumGuilds(){
+        int x = 0;
+        if (!isConnected()) connect();
+        try {
+            ResultSet rs = connection.createStatement().executeQuery("SELECT id FROM servers WHERE premium=1;");
+            if (rs.next()){
+                while (rs.next()){
+                    x++;
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            log(e.getMessage());
+        }
+        return x;
+    }
+
+    public List<Long> getPremiumServers(){
+        List<Long> l = new ArrayList<>();
+        if (!isConnected()) connect();
+        try {
+            ResultSet rs = connection.createStatement().executeQuery("SELECT server_id FROM servers WHERE premium=1;");
+            while (rs.next()){
+                l.add(rs.getLong(1));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            log(e.getMessage());
+        }
+        return l;
+    }
+
+    public void addReport(long id, String reaso, long reporter){
+        if (!isConnected()) connect();
+        try {
+            PreparedStatement ps = connection.prepareStatement("INSERT INTO reported_servers VALUES (?, ?, ?, ?, ?);");
+            ps.setInt(1, 0);
+            ps.setLong(2, id);
+            ps.setTimestamp(3, new Timestamp(System.currentTimeMillis()));
+            ps.setBytes(4, Base64.getEncoder().encode(reaso.getBytes("UTF-8")));
+            ps.setLong(5, reporter);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            log(e.getMessage());
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+            log(e.getMessage());
+        }
+    }
+
     public boolean connect(){
         try {
             connection = DriverManager.getConnection("jdbc:mysql://"+getConfig().getHost()+":"+getConfig().getPort()+"/"+"discordservers?autoReconnect=true",
@@ -536,6 +719,7 @@ public class Database {
             e.printStackTrace();
         }
     }
+
 
     public boolean isConnected(){
         return connection != null;

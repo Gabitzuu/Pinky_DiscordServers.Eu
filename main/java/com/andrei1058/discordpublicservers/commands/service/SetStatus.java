@@ -22,22 +22,23 @@
  * SOFTWARE.
  */
 
-package com.andrei1058.discordpublicservers.commands.server;
+package com.andrei1058.discordpublicservers.commands.service;
 
 import com.andrei1058.discordpublicservers.commands.Command;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.Permission;
+import net.dv8tion.jda.core.entities.Game;
 import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.Member;
-import net.dv8tion.jda.core.entities.PrivateChannel;
 import net.dv8tion.jda.core.entities.TextChannel;
 import net.dv8tion.jda.core.utils.PermissionUtil;
 
-import static com.andrei1058.discordpublicservers.BOT.*;
+import static com.andrei1058.discordpublicservers.BOT.getBot;
+import static com.andrei1058.discordpublicservers.BOT.getConfig;
 
-public class Feedback extends Command {
+public class SetStatus extends Command {
 
-    public Feedback(String name) {
+    public SetStatus(String name) {
         super(name);
     }
 
@@ -45,40 +46,21 @@ public class Feedback extends Command {
     public void execute(String[] args, TextChannel c, Member sender, Guild g, String s) {
         if (!PermissionUtil.checkPermission(c, g.getSelfMember(), Permission.MESSAGE_WRITE)) /* todo msg can't write on this channel */
             return;
-        if (!sender.hasPermission(Permission.MANAGE_ROLES)) return;
+        if (!sender.getUser().getId().equalsIgnoreCase(getConfig().getOwnerID())) return;
         if (PermissionUtil.checkPermission(c, g.getSelfMember(), Permission.MESSAGE_EMBED_LINKS)) {
-            EmbedBuilder eb = new EmbedBuilder();
-            if (s.isEmpty() || args.length < 3) {
-                eb.setTitle("Sorry");
-                eb.setColor(getConfig().getColor());
-                eb.setDescription("Your message is too short!\nExample: 00feedback Keep up the good work!");
-                c.sendMessage(eb.build()).queue();
+            EmbedBuilder b = new EmbedBuilder();
+            b.setColor(getConfig().getColor());
+            if (s.isEmpty()){
+                b.setTitle("Sorry");
+                b.setDescription("Insufficient arguments.\nUsage: 00setStatus message");
+                c.sendMessage(b.build()).queue();
                 return;
             }
-            eb.setTitle("Thanks");
-            eb.setColor(getConfig().getColor());
-            eb.setDescription("Your feedback was sent!");
-            c.sendMessage(eb.build()).queue();
-        } else {
-            if (s.isEmpty() || args.length < 3) {
-                c.sendMessage("Sorry :frowning:\nYour message is too short.\nExample: `00feedback Keep up the good work!`").queue();
-                return;
-            }
-            c.sendMessage("Thanks :smiley:\nYour feedback was sent!").queue();
-        }
-        getDatabase().addFeedback(sender.getUser().getName(), sender.getUser().getIdLong(), s);
-        log("New feedback: "+s);
-        try {
-            PrivateChannel p = getBot().getUserById(getConfig().getOwnerID()).openPrivateChannel().complete();
-            EmbedBuilder eb = new EmbedBuilder();
-            eb.setTitle("Feedback");
-            eb.setColor(getConfig().getColor());
-            eb.setDescription(s);
-            eb.setFooter(sender.getUser().getName()+"#"+sender.getUser().getDiscriminator(), sender.getUser().getAvatarUrl());
-            p.sendMessage(eb.build()).queue();
-        } catch (Exception e){
-            log(e.getMessage());
-            e.printStackTrace();
+            getBot().getPresence().setGame(Game.playing(s.replace("{servers}", String.valueOf(getBot().getGuilds().size()))));
+            b.setTitle("Done!");
+            b.setDescription("Status saved!");
+            c.sendMessage(b.build()).queue();
+            getConfig().saveStatus(s);
         }
     }
 }

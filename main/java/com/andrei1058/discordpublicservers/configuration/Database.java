@@ -42,22 +42,22 @@ public class Database {
 
     private Connection connection;
 
-    public Database(){
+    public Database() {
         try {
             DriverManager.registerDriver(new com.mysql.jdbc.Driver());
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        if (!connect()){
-           log("Can't connect to database!");
-           getBot().shutdownNow();
-           System.exit(1);
-           return;
+        if (!connect()) {
+            log("Can't connect to database!");
+            getBot().shutdownNow();
+            System.exit(1);
+            return;
         }
         setupDatabase();
     }
 
-    private void setupDatabase(){
+    private void setupDatabase() {
         if (!isConnected()) connect();
         try {
             connection.createStatement().executeUpdate("CREATE TABLE IF NOT EXISTS servers (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, server_id BIGINT(200), added_date TIMESTAMP, " +
@@ -74,21 +74,21 @@ public class Database {
         }
     }
 
-    public boolean isGuildExists(String id){
+    public boolean isGuildExists(String id) {
         if (!isConnected()) connect();
         try {
-            ResultSet rs = connection.createStatement().executeQuery("SELECT server_name FROM servers WHERE server_id='"+id+"';");
+            ResultSet rs = connection.createStatement().executeQuery("SELECT server_name FROM servers WHERE server_id='" + id + "';");
             return rs.next();
-        } catch (Exception ex){
+        } catch (Exception ex) {
             log(ex.getMessage());
             return false;
         }
     }
 
-    public boolean isGuildBanned(String id){
+    public boolean isGuildBanned(String id) {
         if (!isConnected()) connect();
         try {
-            ResultSet rs = connection.createStatement().executeQuery("SELECT reason FROM banned_servers WHERE server_id='"+id+"';");
+            ResultSet rs = connection.createStatement().executeQuery("SELECT reason FROM banned_servers WHERE server_id='" + id + "';");
             return rs.next();
         } catch (SQLException e) {
             log(e.getMessage());
@@ -96,10 +96,10 @@ public class Database {
         }
     }
 
-    public String getGuildBanReason(String id){
+    public String getGuildBanReason(String id) {
         if (!isConnected()) connect();
         try {
-            ResultSet rs = connection.createStatement().executeQuery("SELECT reason FROM banned_servers WHERE server_id='"+id+"';");
+            ResultSet rs = connection.createStatement().executeQuery("SELECT reason FROM banned_servers WHERE server_id='" + id + "';");
             if (rs.next()) {
                 return new String(Base64.getDecoder().decode(rs.getBytes(1)));
             }
@@ -110,10 +110,10 @@ public class Database {
         return "";
     }
 
-    public String getUserBanReason(String id){
+    public String getUserBanReason(String id) {
         if (!isConnected()) connect();
         try {
-            ResultSet rs = connection.createStatement().executeQuery("SELECT reason FROM banned_users WHERE server_id='"+id+"';");
+            ResultSet rs = connection.createStatement().executeQuery("SELECT reason FROM banned_users WHERE server_id='" + id + "';");
             return new String(Base64.getDecoder().decode(rs.getBytes(1)));
         } catch (SQLException e) {
             log(e.getMessage());
@@ -121,10 +121,10 @@ public class Database {
         }
     }
 
-    public boolean isUserBanned(String id){
+    public boolean isUserBanned(String id) {
         if (!isConnected()) connect();
         try {
-            ResultSet rs = connection.createStatement().executeQuery("SELECT reason FROM banned_users WHERE user_id='"+id+"';");
+            ResultSet rs = connection.createStatement().executeQuery("SELECT reason FROM banned_users WHERE user_id='" + id + "';");
             return rs.next();
         } catch (SQLException e) {
             log(e.getMessage());
@@ -132,7 +132,7 @@ public class Database {
         }
     }
 
-    public void banUser(long id, String reason){
+    public void banUser(long id, String reason) {
         if (!isConnected()) connect();
         try {
             PreparedStatement ps = connection.prepareStatement("INSERT INTO banned_users VALUES(?,?,?,?);");
@@ -149,19 +149,19 @@ public class Database {
             e.printStackTrace();
         }
         User u = getBot().getUserById(id);
-        if (u != null){
+        if (u != null) {
             try {
                 EmbedBuilder b = new EmbedBuilder();
                 b.setTitle("DiscordServers.Eu", getConfig().getLogo());
                 b.setThumbnail(getConfig().getLogo());
                 b.setAuthor(getBot().getSelfUser().getName(), "https://discordpublicservers.com", getBot().getSelfUser().getAvatarUrl());
-                b.setDescription("You're now banned from the service.\nReason: "+reason);
+                b.setDescription("You're now banned from the service.\nReason: " + reason);
                 u.openPrivateChannel().complete().sendMessage(b.build()).queue();
-            } catch (Exception e){
+            } catch (Exception e) {
                 log(e.getMessage());
             }
-            for (Guild g : getBot().getGuilds()){
-                if (g.getOwner().getUser().getIdLong() == id){
+            for (Guild g : getBot().getGuilds()) {
+                if (g.getOwner().getUser().getIdLong() == id) {
                     Messages.send(g, u, Messages.Message.CANT_SCAN_USER_BANNED);
                     g.leave().complete();
                 }
@@ -169,7 +169,7 @@ public class Database {
         }
     }
 
-    public void banGuild(long id, String reason){
+    public void banGuild(long id, String reason) {
         if (!isConnected()) connect();
         try {
             PreparedStatement ps = connection.prepareStatement("INSERT INTO banned_servers VALUES(?,?,?,?);");
@@ -185,32 +185,32 @@ public class Database {
             e.printStackTrace();
         } finally {
             Guild g = getBot().getGuildById(id);
-            if (g != null){
+            if (g != null) {
                 Messages.send(g, g.getOwner().getUser(), Messages.Message.CANT_SCAN_GUILD_BANED);
                 g.leave().complete();
             }
         }
     }
 
-    public void unbanUser(long id){
+    public void unbanUser(long id) {
         if (!isConnected()) connect();
         try {
-            connection.createStatement().executeUpdate("DELETE FROM banned_users WHERE user_id='"+id+"';");
+            connection.createStatement().executeUpdate("DELETE FROM banned_users WHERE user_id='" + id + "';");
         } catch (SQLException e) {
             log(e.getMessage());
         }
     }
 
-    public void unbanGuild(long id){
+    public void unbanGuild(long id) {
         if (!isConnected()) connect();
         try {
-            connection.createStatement().executeUpdate("DELETE FROM banned_servers WHERE server_id='"+id+"';");
+            connection.createStatement().executeUpdate("DELETE FROM banned_servers WHERE server_id='" + id + "';");
         } catch (SQLException e) {
             log(e.getMessage());
         }
     }
 
-    public void addNewServer(long server_id, String server_name, int on_users, int tot_users, int bots, long owner_id, String owner_name, String invite_link, String server_icon, String tags, String langs){
+    public void addNewServer(long server_id, String server_name, int on_users, int tot_users, int bots, long owner_id, String owner_name, String invite_link, String server_icon, String tags, String langs) {
         if (!isConnected()) connect();
         try {
             PreparedStatement ps = connection.prepareStatement("INSERT INTO servers VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);");
@@ -243,17 +243,17 @@ public class Database {
         }
     }
 
-    private void createVoteTable(long id){
+    private void createVoteTable(long id) {
         if (!isConnected()) connect();
         try {
-            connection.createStatement().executeUpdate("CREATE TABLE IF NOT EXISTS votes_"+id+" (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, user_id bigint(200), date timestamp);");
-        } catch (Exception e){
+            connection.createStatement().executeUpdate("CREATE TABLE IF NOT EXISTS votes_" + id + " (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, user_id bigint(200), date timestamp);");
+        } catch (Exception e) {
             e.printStackTrace();
             log(e.getMessage());
         }
     }
 
-    public void updateGuildData(long server_id, String server_name, int on_users, int tot_users, int bots, long owner_id, String owner_name, String invite_link, String server_icon){
+    public void updateGuildData(long server_id, String server_name, int on_users, int tot_users, int bots, long owner_id, String owner_name, String invite_link, String server_icon) {
         if (!isConnected()) connect();
         try {
             PreparedStatement ps = connection.prepareStatement("UPDATE servers SET server_name=?, on_users=?, tot_users=?, bots=?, owner_id=?, owner_name=?, last_update=?, invite_link=?, server_icon=? WHERE server_id=?;");
@@ -275,10 +275,10 @@ public class Database {
         }
     }
 
-    public void updateMembersCount(String id, int on, int tot){
+    public void updateMembersCount(String id, int on, int tot) {
         if (!isConnected()) connect();
         try {
-            PreparedStatement ps = connection.prepareStatement("UPDATE servers SET on_users=?, tot_users=? WHERE server_id='"+id+"';");
+            PreparedStatement ps = connection.prepareStatement("UPDATE servers SET on_users=?, tot_users=? WHERE server_id='" + id + "';");
             ps.setInt(1, on);
             ps.setInt(2, tot);
             ps.executeUpdate();
@@ -287,10 +287,10 @@ public class Database {
         }
     }
 
-    public void updateBotsCount(String id, int bots){
+    public void updateBotsCount(String id, int bots) {
         if (!isConnected()) connect();
         try {
-            PreparedStatement ps = connection.prepareStatement("UPDATE servers SET bots=? WHERE server_id='"+id+"';");
+            PreparedStatement ps = connection.prepareStatement("UPDATE servers SET bots=? WHERE server_id='" + id + "';");
             ps.setInt(1, bots);
             ps.executeUpdate();
         } catch (SQLException e) {
@@ -298,10 +298,10 @@ public class Database {
         }
     }
 
-    public void updateGuildName(String id, String var){
+    public void updateGuildName(String id, String var) {
         if (!isConnected()) connect();
         try {
-            PreparedStatement ps = connection.prepareStatement("UPDATE servers SET server_name=? WHERE server_id='"+id+"';");
+            PreparedStatement ps = connection.prepareStatement("UPDATE servers SET server_name=? WHERE server_id='" + id + "';");
             ps.setString(1, Base64.getEncoder().encode(var.getBytes("UTF-8")).toString());
             ps.executeUpdate();
         } catch (SQLException e) {
@@ -312,10 +312,10 @@ public class Database {
         }
     }
 
-    public void updateGuildOwner(String id, String var, long owner_id){
+    public void updateGuildOwner(String id, String var, long owner_id) {
         if (!isConnected()) connect();
         try {
-            PreparedStatement ps = connection.prepareStatement("UPDATE servers SET owner_id=?, owner_name=? WHERE server_id='"+id+"';");
+            PreparedStatement ps = connection.prepareStatement("UPDATE servers SET owner_id=?, owner_name=? WHERE server_id='" + id + "';");
             ps.setLong(1, owner_id);
             ps.setString(2, var);
             ps.executeUpdate();
@@ -325,10 +325,10 @@ public class Database {
         }
     }
 
-    public void updateGuildIcon(String id, String var){
+    public void updateGuildIcon(String id, String var) {
         if (!isConnected()) connect();
         try {
-            PreparedStatement ps = connection.prepareStatement("UPDATE servers SET server_icon=? WHERE server_id='"+id+"';");
+            PreparedStatement ps = connection.prepareStatement("UPDATE servers SET server_icon=? WHERE server_id='" + id + "';");
             ps.setString(1, var);
             ps.executeUpdate();
         } catch (SQLException e) {
@@ -337,10 +337,10 @@ public class Database {
         }
     }
 
-    public void updateLastTime(String id){
+    public void updateLastTime(String id) {
         if (!isConnected()) connect();
         try {
-            PreparedStatement ps = connection.prepareStatement("UPDATE servers SET last_update=? WHERE server_id='"+id+"';");
+            PreparedStatement ps = connection.prepareStatement("UPDATE servers SET last_update=? WHERE server_id='" + id + "';");
             ps.setTimestamp(1, new Timestamp(System.currentTimeMillis()));
             ps.executeUpdate();
         } catch (SQLException e) {
@@ -349,27 +349,27 @@ public class Database {
         }
     }
 
-    public void hideGuild(String id){
+    public void hideGuild(String id) {
         if (!isConnected()) connect();
         try {
-            connection.createStatement().executeUpdate("UPDATE servers SET display=0, WHERE server_id='"+id+"';");
+            connection.createStatement().executeUpdate("UPDATE servers SET display=0, WHERE server_id='" + id + "';");
         } catch (SQLException e) {
             log(e.getMessage());
             e.printStackTrace();
         }
     }
 
-    public void showGuild(String id){
+    public void showGuild(String id) {
         if (!isConnected()) connect();
         try {
-            connection.createStatement().executeUpdate("UPDATE servers SET display=1, WHERE server_id='"+id+"';");
+            connection.createStatement().executeUpdate("UPDATE servers SET display=1, WHERE server_id='" + id + "';");
         } catch (SQLException e) {
             log(e.getMessage());
             e.printStackTrace();
         }
     }
 
-    public void updateDesc(String id, String desc){
+    public void updateDesc(String id, String desc) {
         if (!isConnected()) connect();
         try {
             byte[] d = new byte[0];
@@ -378,7 +378,7 @@ public class Database {
             } catch (UnsupportedEncodingException e) {
                 log(e.getMessage());
             }
-            PreparedStatement ps = connection.prepareStatement("UPDATE servers SET server_desc=? WHERE server_id='"+id+"';");
+            PreparedStatement ps = connection.prepareStatement("UPDATE servers SET server_desc=? WHERE server_id='" + id + "';");
             ps.setString(1, Base64.getEncoder().encodeToString(d));
             ps.executeUpdate();
         } catch (SQLException e) {
@@ -387,11 +387,11 @@ public class Database {
         }
     }
 
-    public Timestamp getLastBump(String id){
+    public Timestamp getLastBump(String id) {
         if (!isConnected()) connect();
         try {
-            ResultSet rs = connection.createStatement().executeQuery("SELECT last_bump FROM servers WHERE server_id='"+id+"';");
-            if (rs.next()){
+            ResultSet rs = connection.createStatement().executeQuery("SELECT last_bump FROM servers WHERE server_id='" + id + "';");
+            if (rs.next()) {
                 return rs.getTimestamp(1);
             }
         } catch (SQLException e) {
@@ -401,10 +401,10 @@ public class Database {
         return null;
     }
 
-    public void updateTags(String id, String var){
+    public void updateTags(String id, String var) {
         if (!isConnected()) connect();
         try {
-            PreparedStatement ps = connection.prepareStatement("UPDATE servers SET tags=? WHERE server_id='"+id+"';");
+            PreparedStatement ps = connection.prepareStatement("UPDATE servers SET tags=? WHERE server_id='" + id + "';");
             ps.setString(1, var.toUpperCase());
             ps.executeUpdate();
         } catch (SQLException e) {
@@ -413,10 +413,10 @@ public class Database {
         }
     }
 
-    public void updateLanguage(String id, String var){
+    public void updateLanguage(String id, String var) {
         if (!isConnected()) connect();
         try {
-            PreparedStatement ps = connection.prepareStatement("UPDATE servers SET langs=? WHERE server_id='"+id+"';");
+            PreparedStatement ps = connection.prepareStatement("UPDATE servers SET langs=? WHERE server_id='" + id + "';");
             ps.setString(1, var.toUpperCase());
             ps.executeUpdate();
         } catch (SQLException e) {
@@ -425,10 +425,10 @@ public class Database {
         }
     }
 
-    public boolean isShown(String id){
+    public boolean isShown(String id) {
         if (!isConnected()) connect();
         try {
-            ResultSet rs = connection.createStatement().executeQuery("SELECT server_name FROM servers WHERE server_id='"+id+"';");
+            ResultSet rs = connection.createStatement().executeQuery("SELECT server_name FROM servers WHERE server_id='" + id + "';");
             return rs.next();
         } catch (SQLException e) {
             log(e.getMessage());
@@ -437,11 +437,11 @@ public class Database {
         }
     }
 
-    public boolean isPremium(String id){
+    public boolean isPremium(String id) {
         if (!isConnected()) connect();
         try {
-            ResultSet rs = connection.createStatement().executeQuery("SELECT premium FROM servers WHERE server_id='"+id+"';");
-            if (rs.next()){
+            ResultSet rs = connection.createStatement().executeQuery("SELECT premium FROM servers WHERE server_id='" + id + "';");
+            if (rs.next()) {
                 if (rs.getInt(1) == 1) return true;
             }
             return false;
@@ -452,37 +452,37 @@ public class Database {
         }
     }
 
-    private void setPremium(String id){
+    private void setPremium(String id) {
         if (!isConnected()) connect();
         try {
-            connection.createStatement().executeUpdate("UPDATE servers SET premium=1 WHERE server_id='"+id+"';");
+            connection.createStatement().executeUpdate("UPDATE servers SET premium=1 WHERE server_id='" + id + "';");
         } catch (SQLException e) {
             log(e.getMessage());
             e.printStackTrace();
         }
     }
 
-    public void bumpGuild(String id){
+    public void bumpGuild(String id) {
         if (!isConnected()) connect();
         try {
             ResultSet rs = connection.createStatement().executeQuery("SELECT MAX(id) FROM servers");
-            connection.createStatement().executeUpdate("UPDATE servers SET id='"+rs.getInt(1)+"', WHERE server_id='"+id+"';");
+            connection.createStatement().executeUpdate("UPDATE servers SET id='" + rs.getInt(1) + "', WHERE server_id='" + id + "';");
         } catch (SQLException e) {
             log(e.getMessage());
             e.printStackTrace();
         }
     }
 
-    public void voteGuild(String string, long user){
+    public void voteGuild(String string, long user) {
         if (!isConnected()) connect();
         try {
-            PreparedStatement ps = connection.prepareStatement("INSERT INTO votes_"+string+" VALUES (?, ?, ?);");
+            PreparedStatement ps = connection.prepareStatement("INSERT INTO votes_" + string + " VALUES (?, ?, ?);");
             ps.setInt(1, 0);
             ps.setLong(2, user);
             ps.setTimestamp(3, new Timestamp(System.currentTimeMillis()));
             ps.executeUpdate();
-        } catch (Exception e){
-            if (e.getMessage().contains("votes_")){
+        } catch (Exception e) {
+            if (e.getMessage().contains("votes_")) {
                 createVoteTable(Long.valueOf(string));
             } else {
                 log(e.getMessage());
@@ -491,37 +491,37 @@ public class Database {
         }
     }
 
-    public boolean hasVote(String id, long user){
+    public boolean hasVote(String id, long user) {
         if (!isConnected()) connect();
         try {
-            ResultSet rs = connection.createStatement().executeQuery("SELECT id FROM votes_"+id+" WHERE user_id='"+user+"';");
+            ResultSet rs = connection.createStatement().executeQuery("SELECT id FROM votes_" + id + " WHERE user_id='" + user + "';");
             return rs.next();
-        } catch (Exception e){
+        } catch (Exception e) {
             log(e.getMessage());
             e.printStackTrace();
             return false;
         }
     }
 
-    public Timestamp getVoteDate(String id, long user){
+    public Timestamp getVoteDate(String id, long user) {
         if (!isConnected()) connect();
         try {
-            ResultSet rs = connection.createStatement().executeQuery("SELECT date FROM votes_"+id+" WHERE user_id='"+user+"';");
-            if (rs.next()){
+            ResultSet rs = connection.createStatement().executeQuery("SELECT date FROM votes_" + id + " WHERE user_id='" + user + "';");
+            if (rs.next()) {
                 return rs.getTimestamp(1);
             }
-        } catch (Exception e){
+        } catch (Exception e) {
             log(e.getMessage());
             e.printStackTrace();
         }
         return new Timestamp(System.currentTimeMillis());
     }
 
-    public int getVotes(String id){
+    public int getVotes(String id) {
         if (!isConnected()) connect();
         try {
-            ResultSet rs = connection.createStatement().executeQuery("SELECT MAX(id) FROM votes_"+id+";");
-            if (rs.next()){
+            ResultSet rs = connection.createStatement().executeQuery("SELECT MAX(id) FROM votes_" + id + ";");
+            if (rs.next()) {
                 return rs.getInt(1);
             }
         } catch (SQLException e) {
@@ -531,7 +531,7 @@ public class Database {
         return 1;
     }
 
-    public void addFeedback(String user_name, long user_id, String message){
+    public void addFeedback(String user_name, long user_id, String message) {
         if (!isConnected()) connect();
         try {
             PreparedStatement ps = connection.prepareStatement("INSERT INTO feedback VALUES (?, ?, ?, ?);");
@@ -549,12 +549,12 @@ public class Database {
         }
     }
 
-    public void addPremiumGuild(long id, int duration){
+    public void addPremiumGuild(long id, int duration) {
         if (!isConnected()) connect();
         try {
-            ResultSet rs = connection.createStatement().executeQuery("SELECT id FROM premium_servers WHERE server_id='"+id+"';");
-            if (rs.next()){
-                PreparedStatement ps = connection.prepareStatement("UPDATE premium_servers SET bought_date=?, expire_date=? WHERE server_id='"+id+"';");
+            ResultSet rs = connection.createStatement().executeQuery("SELECT id FROM premium_servers WHERE server_id='" + id + "';");
+            if (rs.next()) {
+                PreparedStatement ps = connection.prepareStatement("UPDATE premium_servers SET bought_date=?, expire_date=? WHERE server_id='" + id + "';");
                 Timestamp b = new Timestamp(System.currentTimeMillis());
                 ps.setTimestamp(1, b);
                 DateTime d = new DateTime(System.currentTimeMillis()).plusDays(duration).toDateTime();
@@ -580,7 +580,7 @@ public class Database {
         }
     }
 
-    private void addPremiumHistory(long id, int duration){
+    private void addPremiumHistory(long id, int duration) {
         if (!isConnected()) connect();
         try {
             PreparedStatement ps = connection.prepareStatement("INSERT INTO premium_history VALUES (?, ?, ?, ?);");
@@ -595,11 +595,11 @@ public class Database {
         }
     }
 
-    public Timestamp getPremiumExpire(String id){
+    public Timestamp getPremiumExpire(String id) {
         if (!isConnected()) connect();
         try {
-            ResultSet rs = connection.createStatement().executeQuery("SELECT expire_date FROM premium_servers WHERE server_id='"+id+"';");
-            if (rs.next()){
+            ResultSet rs = connection.createStatement().executeQuery("SELECT expire_date FROM premium_servers WHERE server_id='" + id + "';");
+            if (rs.next()) {
                 return rs.getTimestamp(1);
             }
         } catch (SQLException e) {
@@ -609,37 +609,37 @@ public class Database {
         return new Timestamp(0);
     }
 
-    public void removePremium(String id){
+    public void removePremium(String id) {
         if (!isConnected()) connect();
         try {
-            connection.createStatement().executeUpdate("DELETE FROM premium_servers WHERE server_id='"+id+"';");
-            connection.createStatement().executeUpdate("UPDATE servers SET premium=0 WHERE server_id='"+id+"';");
-        } catch (Exception e){
+            connection.createStatement().executeUpdate("DELETE FROM premium_servers WHERE server_id='" + id + "';");
+            connection.createStatement().executeUpdate("UPDATE servers SET premium=0 WHERE server_id='" + id + "';");
+        } catch (Exception e) {
             e.printStackTrace();
             log(e.getMessage());
         }
     }
 
-    public int getDatabaseServers(){
+    public int getDatabaseServers() {
         if (!isConnected()) connect();
         try {
             ResultSet rs = connection.createStatement().executeQuery("SELECT MAX(id) FROM servers;");
-            if (rs.next()){
+            if (rs.next()) {
                 return rs.getInt(1);
             }
-        } catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return 0;
     }
 
-    public int getDisplayedGuilds(){
+    public int getDisplayedGuilds() {
         int x = 0;
         if (!isConnected()) connect();
         try {
             ResultSet rs = connection.createStatement().executeQuery("SELECT id FROM servers WHERE display=1;");
-            if (rs.next()){
-                while (rs.next()){
+            if (rs.next()) {
+                while (rs.next()) {
                     x++;
                 }
             }
@@ -650,15 +650,13 @@ public class Database {
         return x;
     }
 
-    public int getPremiumGuilds(){
+    public int getPremiumGuilds() {
         int x = 0;
         if (!isConnected()) connect();
         try {
             ResultSet rs = connection.createStatement().executeQuery("SELECT id FROM servers WHERE premium=1;");
-            if (rs.next()){
-                while (rs.next()){
-                    x++;
-                }
+            while (rs.next()) {
+                x++;
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -667,12 +665,12 @@ public class Database {
         return x;
     }
 
-    public List<Long> getPremiumServers(){
+    public List<Long> getPremiumServers() {
         List<Long> l = new ArrayList<>();
         if (!isConnected()) connect();
         try {
             ResultSet rs = connection.createStatement().executeQuery("SELECT server_id FROM servers WHERE premium=1;");
-            while (rs.next()){
+            while (rs.next()) {
                 l.add(rs.getLong(1));
             }
         } catch (SQLException e) {
@@ -682,7 +680,7 @@ public class Database {
         return l;
     }
 
-    public void addReport(long id, String reaso, long reporter){
+    public void addReport(long id, String reaso, long reporter) {
         if (!isConnected()) connect();
         try {
             PreparedStatement ps = connection.prepareStatement("INSERT INTO reported_servers VALUES (?, ?, ?, ?, ?);");
@@ -701,10 +699,10 @@ public class Database {
         }
     }
 
-    public boolean connect(){
+    public boolean connect() {
         try {
-            connection = DriverManager.getConnection("jdbc:mysql://"+getConfig().getHost()+":"+getConfig().getPort()+"/"+"discordservers?autoReconnect=true&user="+getConfig().getUser()
-                            +"&password="+getConfig().getPass());
+            connection = DriverManager.getConnection("jdbc:mysql://" + getConfig().getHost() + ":" + getConfig().getPort() + "/" + "discordservers?autoReconnect=true&user=" + getConfig().getUser()
+                    + "&password=" + getConfig().getPass());
             return true;
         } catch (SQLException e) {
             e.printStackTrace();
@@ -712,7 +710,7 @@ public class Database {
         }
     }
 
-    public void close(){
+    public void close() {
         if (!isConnected()) return;
         try {
             connection.close();
@@ -722,7 +720,7 @@ public class Database {
     }
 
 
-    public boolean isConnected(){
+    public boolean isConnected() {
         return connection != null;
     }
 }

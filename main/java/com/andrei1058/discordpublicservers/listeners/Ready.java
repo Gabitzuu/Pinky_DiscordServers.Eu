@@ -34,6 +34,7 @@ import net.dv8tion.jda.core.hooks.ListenerAdapter;
 
 import static com.andrei1058.discordpublicservers.BOT.getBot;
 import static com.andrei1058.discordpublicservers.BOT.getConfig;
+import static com.andrei1058.discordpublicservers.BOT.getDatabase;
 
 public class Ready extends ListenerAdapter {
 
@@ -57,8 +58,10 @@ public class Ready extends ListenerAdapter {
                 break;
         }
         getBot().getPresence().setStatus(getConfig().getStatus());
-        Misc.guildsRefresh();
-        Misc.checkPremiumExpire();
+        if (getDatabase() != null) {
+            Misc.guildsRefresh();
+            Misc.checkPremiumExpire();
+        }
     }
 
     @Override

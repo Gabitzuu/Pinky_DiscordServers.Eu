@@ -61,14 +61,14 @@ public class Database {
         if (!isConnected()) connect();
         try {
             connection.createStatement().executeUpdate("CREATE TABLE IF NOT EXISTS servers (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, server_id BIGINT(200), added_date TIMESTAMP, " +
-                    "server_name BLOB(200), server_desc BLOB(200), on_users INT(200), tot_users INT(200), bots INT(200), last_bump TIMESTAMP, last_update TIMESTAMP, votes INT(200), " +
-                    "premium INT(1), owner_id BIGINT(200), owner_name BLOB(200), invite_link VARCHAR(200), server_icon VARCHAR(200), tags VARCHAR(200), langs VARCHAR(200), display INT(1));");
+                    "server_name MEDIUMBLOB(200), server_desc MEDIUMBLOB(200), on_users INT(200), tot_users INT(200), bots INT(200), last_bump TIMESTAMP, last_update TIMESTAMP, votes INT(200), " +
+                    "premium INT(1), owner_id BIGINT(200), owner_name VARCHAR(200), invite_link VARCHAR(200), server_icon VARCHAR(200), tags VARCHAR(200), langs VARCHAR(200), display INT(1));");
             connection.createStatement().executeUpdate("CREATE TABLE IF NOT EXISTS banned_servers (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, server_id BIGINT(200), date TIMESTAMP, reason VARCHAR(200));");
-            connection.createStatement().executeUpdate("CREATE TABLE IF NOT EXISTS banned_users (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, user_id BIGINT(200), date TIMESTAMP, reason BLOB(200));");
-            connection.createStatement().executeUpdate("CREATE TABLE IF NOT EXISTS feedback (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, user_id BIGINT(200), user_name VARCHAR(200), message BLOB(200));");
+            connection.createStatement().executeUpdate("CREATE TABLE IF NOT EXISTS banned_users (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, user_id BIGINT(200), date TIMESTAMP, reason MEDIUMBLOB(200));");
+            connection.createStatement().executeUpdate("CREATE TABLE IF NOT EXISTS feedback (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, user_id BIGINT(200), user_name VARCHAR(200), message MEDIUMBLOB(200));");
             connection.createStatement().executeUpdate("CREATE TABLE IF NOT EXISTS premium_servers (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, server_id BIGINT(200), bought_date TIMESTAMP, expire_date TIMESTAMP);");
             connection.createStatement().executeUpdate("CREATE TABLE IF NOT EXISTS premium_history (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, server_id BIGINT(200), bought_date TIMESTAMP, duration INT(10));");
-            connection.createStatement().executeUpdate("CREATE TABLE IF NOT EXISTS reported_servers (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, server_id BIGINT(200), report_date TIMESTAMP, reason BLOB(200), reporter BIGINT(200));");
+            connection.createStatement().executeUpdate("CREATE TABLE IF NOT EXISTS reported_servers (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, server_id BIGINT(200), report_date TIMESTAMP, reason MEDIUMBLOB(200), reporter BIGINT(200));");
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -217,8 +217,8 @@ public class Database {
             ps.setInt(1, 0);
             ps.setLong(2, server_id);
             ps.setTimestamp(3, new Timestamp(System.currentTimeMillis()));
-            ps.setString(4, Base64.getEncoder().encode(server_name.getBytes("UTF-8")).toString());
-            ps.setString(5, Base64.getEncoder().encode("A new Discord server :D".getBytes("UTF-8")).toString());
+            ps.setBytes(4, Base64.getEncoder().encode(server_name.getBytes("UTF-8")));
+            ps.setBytes(5, Base64.getEncoder().encode("A new Discord server :D".getBytes("UTF-8")));
             ps.setInt(6, on_users);
             ps.setInt(7, tot_users);
             ps.setInt(8, bots);
@@ -257,7 +257,7 @@ public class Database {
         if (!isConnected()) connect();
         try {
             PreparedStatement ps = connection.prepareStatement("UPDATE servers SET server_name=?, on_users=?, tot_users=?, bots=?, owner_id=?, owner_name=?, last_update=?, invite_link=?, server_icon=? WHERE server_id=?;");
-            ps.setString(1, Base64.getEncoder().encode(server_name.getBytes("UTF-8")).toString());
+            ps.setBytes(1, Base64.getEncoder().encode(server_name.getBytes("UTF-8")));
             ps.setInt(2, on_users);
             ps.setInt(3, tot_users);
             ps.setInt(4, bots);
@@ -302,7 +302,7 @@ public class Database {
         if (!isConnected()) connect();
         try {
             PreparedStatement ps = connection.prepareStatement("UPDATE servers SET server_name=? WHERE server_id='" + id + "';");
-            ps.setString(1, Base64.getEncoder().encode(var.getBytes("UTF-8")).toString());
+            ps.setBytes(1, Base64.getEncoder().encode(var.getBytes("UTF-8")));
             ps.executeUpdate();
         } catch (SQLException e) {
             log(e.getMessage());
@@ -379,7 +379,7 @@ public class Database {
                 log(e.getMessage());
             }
             PreparedStatement ps = connection.prepareStatement("UPDATE servers SET server_desc=? WHERE server_id='" + id + "';");
-            ps.setString(1, Base64.getEncoder().encodeToString(d));
+            ps.setBytes(1, Base64.getEncoder().encode(d));
             ps.executeUpdate();
         } catch (SQLException e) {
             log(e.getMessage());
